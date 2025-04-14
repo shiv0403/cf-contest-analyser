@@ -1,13 +1,45 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import RecentContestCard from "../components/RecentContestCard/RecentContestCard";
 import PerformanceAnalysis from "../components/PerformanceAnalysis/PerformanceAnalysis";
 import ProblemAnalysis from "../components/ProblemAnalysis/ProblemAnalysis";
 import AiAnalysis from "../components/AiAnalaysis/AiAnalysis";
 
+type Contest = {
+  contestId: number;
+  contestName: string;
+  handle: string;
+  rank: number;
+  ratingUpdateTimeSeconds: number;
+  oldRating: number;
+  newRating: number;
+  date: string;
+};
+
 const ContestAnalysis = () => {
   const [selectedContest, setSelectedContest] = useState("");
   const [timeFilter, setTimeFilter] = useState("all");
+
+  const userHandle = "Fefer_Ivan";
+  const [userContests, setUserContests] = useState([]);
+
+  const fetchUserContests = async () => {
+    try {
+      const response = await fetch(`/api/users?userHandle=${userHandle}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user contests");
+      }
+      const data = await response.json();
+      console.log({ data, userContests });
+      setUserContests(data.result || []);
+    } catch (error) {
+      console.error("Error fetching user contests:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserContests();
+  }, [userHandle]);
 
   const performanceMetrics = {
     ratingChange: +127,
@@ -89,36 +121,7 @@ const ContestAnalysis = () => {
     },
   ];
 
-  const recentContests = [
-    {
-      id: 1,
-      name: "Codeforces Round #835 (Div. 2)",
-      date: "April 10, 2025",
-      participated: true,
-      rating: "+127",
-    },
-    {
-      id: 2,
-      name: "Codeforces Round #834 (Div. 1)",
-      date: "April 5, 2025",
-      participated: true,
-      rating: "-42",
-    },
-    {
-      id: 3,
-      name: "Educational Codeforces Round 156",
-      date: "March 28, 2025",
-      participated: true,
-      rating: "+65",
-    },
-    {
-      id: 4,
-      name: "Codeforces Round #833 (Div. 2)",
-      date: "March 20, 2025",
-      participated: true,
-      rating: "+15",
-    },
-  ];
+  const recentContests: Array<Contest> = userContests.slice(-4);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -178,8 +181,8 @@ const ContestAnalysis = () => {
           >
             <option value="">Select a contest...</option>
             {recentContests.map((contest) => (
-              <option key={contest.id} value={contest.id}>
-                {contest.name} ({contest.date})
+              <option key={contest.contestId} value={contest.contestId}>
+                {contest.contestName} ({contest.date})
               </option>
             ))}
           </select>
@@ -190,7 +193,7 @@ const ContestAnalysis = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {recentContests.map((contest) => (
             <RecentContestCard
-              key={contest.id}
+              key={contest.contestId}
               contest={contest}
               setSelectedContest={setSelectedContest}
             />

@@ -5,36 +5,46 @@ const RecentContestCard = ({
   setSelectedContest,
 }: {
   contest: {
-    id: number;
-    name: string;
+    contestId: number;
+    contestName: string;
+    handle: string;
+    rank: number;
+    ratingUpdateTimeSeconds: number;
+    oldRating: number;
+    newRating: number;
     date: string;
-    participated: boolean;
-    rating: string;
   };
   setSelectedContest: (id: string) => void;
 }) => {
+  const ratingChange = contest.newRating - contest.oldRating;
+  const ratingChangeSign = ratingChange > 0 ? "+" : "-";
+  const displayRatingChange =
+    ratingChangeSign + Math.abs(ratingChange).toString();
+
   return (
     <div
-      key={contest.id}
+      key={contest.contestId}
       className="bg-white rounded-lg shadow-md p-4 border-l-4 cursor-pointer hover:shadow-lg transition-shadow duration-200"
       style={{
-        borderLeftColor: contest.rating.startsWith("+") ? "#10B981" : "#EF4444",
+        borderLeftColor: ratingChangeSign.startsWith("+")
+          ? "#10B981"
+          : "#EF4444",
       }}
-      onClick={() => setSelectedContest(contest.id.toString())}
+      onClick={() => setSelectedContest(contest.contestId.toString())}
     >
       <h3 className="font-semibold text-gray-800 mb-2 truncate">
-        {contest.name}
+        {contest.contestName}
       </h3>
       <div className="flex justify-between text-sm">
-        <span className="text-gray-600">{contest.date}</span>
+        <span className="text-gray-600">{contest?.date}</span>
         <span
           className={
-            contest.rating.startsWith("+")
+            ratingChangeSign.startsWith("+")
               ? "text-green-500 font-medium"
               : "text-red-500 font-medium"
           }
         >
-          {contest.rating}
+          {displayRatingChange}
         </span>
       </div>
     </div>
