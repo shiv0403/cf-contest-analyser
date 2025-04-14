@@ -30,8 +30,7 @@ const ContestAnalysis = () => {
         throw new Error("Failed to fetch user contests");
       }
       const data = await response.json();
-      console.log({ data, userContests });
-      setUserContests(data.result || []);
+      setUserContests(data || []);
     } catch (error) {
       console.error("Error fetching user contests:", error);
     }

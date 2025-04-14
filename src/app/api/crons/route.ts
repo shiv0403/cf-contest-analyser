@@ -1,15 +1,5 @@
 import { prisma } from "@/lib/db";
-
-type Contest = {
-  id: number;
-  name: string;
-  type: string;
-  phase: string;
-  frozen: string;
-  durationSeconds: number;
-  startTimeSeconds: number;
-  relativeTimeSeconds: number;
-};
+import { Contest } from "@/app/types/contest.types";
 
 // Contest sync cron
 export async function POST(request: Request) {
