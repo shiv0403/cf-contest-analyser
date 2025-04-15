@@ -24,4 +24,45 @@ model Contest {
   durationSeconds     Int
   startTimeSeconds    Int
   relativeTimeSeconds Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
+}
+
+model Problem {
+  id                  Int @id @default(autoincrement())
+  contestId           Int
+  index               String
+  name                String
+  type                String
+  points              Int
+  rating              Int
+  tags                String[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
+}
+
+model Submission {
+  id                  Int @id @default(autoincrement())
+  contestId           Int
+  problemId           Int
+  userHandle          String
+  verdict             String
+  language            String
+  timeConsumedMillis  Int?
+  memoryConsumedBytes Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
+}
+
+model PerformanceMetrics {
+  id                  Int @id @default(autoincrement())
+  contestId           Int
+  userHandle          String
+  ratingChange        String
+  problemsSolved      Int
+  totalProblems       Int
+  avgTimePerProblem   Int
+  successRate         Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
 }
