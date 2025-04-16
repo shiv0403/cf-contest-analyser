@@ -16,7 +16,7 @@ datasource db {
 
 model Contest {
   id                  Int @id @default(autoincrement())
-  contestId           Int
+  contestId           Int @unique
   name                String
   type                String
   phase               String
@@ -26,11 +26,16 @@ model Contest {
   relativeTimeSeconds Int
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt @default(now())
+  problems            Problem[]
+  userContests        UserContest[]
+  submissions         Submission[]
+  performanceMetrics  PerformanceMetrics[]
 }
 
 model Problem {
   id                  Int @id @default(autoincrement())
   contestId           Int
+  contest             Contest @relation(fields: [contestId], references: [contestId])
   index               String
   name                String
   type                String
@@ -39,15 +44,32 @@ model Problem {
   tags                String[]
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt @default(now())
+  submissions         Submission[]
+}
+
+model UserContest {
+  id                  Int @id @default(autoincrement())
+  contestId           Int
+  contest             Contest @relation(fields: [contestId], references: [contestId])
+  userHandle          String
+  rank                Int
+  oldRating           Int
+  newRating           Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
 }
 
 model Submission {
   id                  Int @id @default(autoincrement())
   contestId           Int
+  contest             Contest @relation(fields: [contestId], references: [contestId])
   problemId           Int
+  problem             Problem @relation(fields: [problemId], references: [id])
   userHandle          String
   verdict             String
   language            String
+  creationTimeSeconds Int
+  relativeTimeSeconds Int
   timeConsumedMillis  Int?
   memoryConsumedBytes Int?
   createdAt           DateTime @default(now())
@@ -57,6 +79,7 @@ model Submission {
 model PerformanceMetrics {
   id                  Int @id @default(autoincrement())
   contestId           Int
+  contest             Contest @relation(fields: [contestId], references: [contestId])
   userHandle          String
   ratingChange        String
   problemsSolved      Int

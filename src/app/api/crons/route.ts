@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { Contest } from "@/app/types/contest.types";
+import { CfProblem, Contest } from "@/app/types/contest.types";
 
 // Contest sync cron
 export async function POST(request: Request) {
@@ -30,10 +30,41 @@ export async function POST(request: Request) {
       relativeTimeSeconds: contest.relativeTimeSeconds,
     }));
 
-  const records = await prisma.contest.createMany({ data: contestsData });
+  if (contestsData.length > 0) {
+    await prisma.contest.createMany({ data: contestsData });
+  }
+
+  // Fetch problems from Codeforces API
+  const problemsRes = await fetch(
+    `https://codeforces.com/api/problemset.problems`
+  );
+  const problemsData = await problemsRes.json();
+  const currentProblems = await prisma.problem.findMany();
+
+  // Insert new problems and check before that problem exists
+  const problems = problemsData.result.problems
+    .filter(
+      (problem: { contestId: number }) =>
+        !currentProblems.some((p) => p.contestId === problem.contestId)
+    )
+    .map((problem: CfProblem) => ({
+      contestId: problem.contestId,
+      name: problem.name,
+      index: problem.index,
+      type: problem.type,
+      points: problem.points || 0,
+      rating: problem.rating || 0,
+      tags: problem.tags,
+    }));
+
+  if (problems.length > 0) {
+    await prisma.problem.createMany({
+      data: problems,
+    });
+  }
 
   return new Response(
-    `Contests sync cron ran at ${Date.now()} and inserted ${records} records`,
+    `Contests sync cron for Contest and Problems ran at ${Date.now()} successfully`,
     {
       status: 201,
       headers: { "Content-Type": "application/json" },
