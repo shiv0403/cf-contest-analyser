@@ -4,6 +4,11 @@ import RecentContestCard from "../components/RecentContestCard/RecentContestCard
 import PerformanceAnalysis from "../components/PerformanceAnalysis/PerformanceAnalysis";
 import ProblemAnalysis from "../components/ProblemAnalysis/ProblemAnalysis";
 import AiAnalysis from "../components/AiAnalaysis/AiAnalysis";
+import {
+  PerformanceMetrics,
+  ProblemAnalysisType,
+  UserContest,
+} from "../types/contest.types";
 
 type Contest = {
   contestId: number;
@@ -17,15 +22,35 @@ type Contest = {
 };
 
 const ContestAnalysis = () => {
-  const [selectedContest, setSelectedContest] = useState("");
+  const [selectedContest, setSelectedContest] = useState<UserContest | null>(
+    null
+  );
   const [timeFilter, setTimeFilter] = useState("all");
 
-  const userHandle = "Fefer_Ivan";
+  const userHandle = "dope0403";
   const [userContests, setUserContests] = useState([]);
+  const [problemAnalysis, setProblemAnalysis] = useState<ProblemAnalysisType[]>(
+    []
+  );
+  const [performanceMetrics, setPerformanceMetrics] =
+    useState<PerformanceMetrics>({
+      id: 0,
+      userHandle: "",
+      contestId: 0,
+      ratingChange: "",
+      problemsSolved: 0,
+      totalProblems: 0,
+      avgTimePerProblem: "0 min",
+      successRate: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
   const fetchUserContests = async () => {
     try {
-      const response = await fetch(`/api/users?userHandle=${userHandle}`);
+      const response = await fetch(
+        `/api/userContests?userHandle=${userHandle}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch user contests");
       }
@@ -36,17 +61,34 @@ const ContestAnalysis = () => {
     }
   };
 
+  const fetchContestDetails = async (contestId: number) => {
+    try {
+      const response = await fetch(
+        `/api/userSubmissions?contestId=${contestId}&userHandle=${userHandle}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch contest details");
+      }
+      const data = await response.json();
+      setProblemAnalysis(data.problemAnalysis);
+      setPerformanceMetrics(data.performanceMetrics);
+
+      console.log(data.problemAnalysis, data.performanceMetrics);
+    } catch (error) {
+      console.error("Error fetching contest details:", error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     fetchUserContests();
   }, [userHandle]);
 
-  const performanceMetrics = {
-    ratingChange: +127,
-    solvedProblems: 4,
-    totalProblems: 6,
-    averageTime: "32 min",
-    successRate: "78%",
-  };
+  useEffect(() => {
+    if (selectedContest) {
+      fetchContestDetails(selectedContest.contestId);
+    }
+  }, [selectedContest]);
 
   const weakTopics = [
     {
@@ -69,58 +111,60 @@ const ContestAnalysis = () => {
     },
   ];
 
-  const problems = [
-    {
-      id: "A",
-      name: "Divide and Conquer",
-      status: "Solved",
-      timeTaken: "12 min",
-      wrongAttempts: 0,
-      difficulty: 800,
-    },
-    {
-      id: "B",
-      name: "Balanced Substring",
-      status: "Solved",
-      timeTaken: "24 min",
-      wrongAttempts: 1,
-      difficulty: 1100,
-    },
-    {
-      id: "C",
-      name: "Cyclic Permutations",
-      status: "Solved",
-      timeTaken: "45 min",
-      wrongAttempts: 2,
-      difficulty: 1400,
-    },
-    {
-      id: "D",
-      name: "Tree Queries",
-      status: "Solved",
-      timeTaken: "52 min",
-      wrongAttempts: 0,
-      difficulty: 1700,
-    },
-    {
-      id: "E",
-      name: "Divisibility Problem",
-      status: "Unsolved",
-      timeTaken: "-",
-      wrongAttempts: 3,
-      difficulty: 2100,
-    },
-    {
-      id: "F",
-      name: "Graph Coloring",
-      status: "Unsolved",
-      timeTaken: "-",
-      wrongAttempts: 0,
-      difficulty: 2400,
-    },
-  ];
+  // const problems = [
+  //   {
+  //     id: "A",
+  //     name: "Divide and Conquer",
+  //     status: "Solved",
+  //     timeTaken: "12 min",
+  //     wrongAttempts: 0,
+  //     difficulty: 800,
+  //   },
+  //   {
+  //     id: "B",
+  //     name: "Balanced Substring",
+  //     status: "Solved",
+  //     timeTaken: "24 min",
+  //     wrongAttempts: 1,
+  //     difficulty: 1100,
+  //   },
+  //   {
+  //     id: "C",
+  //     name: "Cyclic Permutations",
+  //     status: "Solved",
+  //     timeTaken: "45 min",
+  //     wrongAttempts: 2,
+  //     difficulty: 1400,
+  //   },
+  //   {
+  //     id: "D",
+  //     name: "Tree Queries",
+  //     status: "Solved",
+  //     timeTaken: "52 min",
+  //     wrongAttempts: 0,
+  //     difficulty: 1700,
+  //   },
+  //   {
+  //     id: "E",
+  //     name: "Divisibility Problem",
+  //     status: "Unsolved",
+  //     timeTaken: "-",
+  //     wrongAttempts: 3,
+  //     difficulty: 2100,
+  //   },
+  //   {
+  //     id: "F",
+  //     name: "Graph Coloring",
+  //     status: "Unsolved",
+  //     timeTaken: "-",
+  //     wrongAttempts: 0,
+  //     difficulty: 2400,
+  //   },
+  // ];
 
   const recentContests: Array<Contest> = userContests.slice(-4);
+
+  console.log({ selectedContest });
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -174,8 +218,14 @@ const ContestAnalysis = () => {
         </div>
         <div className="relative mb-8">
           <select
-            value={selectedContest}
-            onChange={(e) => setSelectedContest(e.target.value)}
+            value={selectedContest?.contestId}
+            onChange={(e) => {
+              const selectedContestId = parseInt(e.target.value);
+              const contest = recentContests.find(
+                (c) => c.contestId === selectedContestId
+              );
+              setSelectedContest(contest || null);
+            }}
             className="w-full md:w-1/2 px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
           >
             <option value="">Select a contest...</option>
@@ -204,7 +254,7 @@ const ContestAnalysis = () => {
       <PerformanceAnalysis performanceMetrics={performanceMetrics} />
 
       {/* Problem analysis */}
-      <ProblemAnalysis problems={problems} />
+      <ProblemAnalysis problems={problemAnalysis} />
 
       {/* AI Analysis */}
       <AiAnalysis weakTopics={weakTopics} />

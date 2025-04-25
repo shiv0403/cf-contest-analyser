@@ -1,15 +1,10 @@
+import { PerformanceMetrics } from "@/app/types/contest.types";
 import React from "react";
 
 const PerformanceAnalysisCard = ({
   performanceMetrics,
 }: {
-  performanceMetrics: {
-    ratingChange: number;
-    solvedProblems: number;
-    totalProblems: number;
-    averageTime: string;
-    successRate: string;
-  };
+  performanceMetrics: PerformanceMetrics;
 }) => {
   return (
     <section className="mb-10">
@@ -23,12 +18,11 @@ const PerformanceAnalysisCard = ({
           </h3>
           <div
             className={`text-5xl font-bold mb-4 ${
-              performanceMetrics.ratingChange > 0
+              performanceMetrics.ratingChange.startsWith("+")
                 ? "text-green-500"
                 : "text-red-500"
             }`}
           >
-            {performanceMetrics.ratingChange > 0 ? "+" : ""}
             {performanceMetrics.ratingChange}
           </div>
           <div className="w-full h-10 bg-gray-100 rounded-lg overflow-hidden">
@@ -45,12 +39,12 @@ const PerformanceAnalysisCard = ({
             </h3>
             <div className="flex items-end justify-between">
               <div className="text-3xl font-bold text-gray-800">
-                {performanceMetrics.solvedProblems}/
+                {performanceMetrics.problemsSolved}/
                 {performanceMetrics.totalProblems}
               </div>
               <div className="text-lg font-medium text-green-500">
                 {Math.round(
-                  (performanceMetrics.solvedProblems /
+                  (performanceMetrics.problemsSolved /
                     performanceMetrics.totalProblems) *
                     100
                 )}
@@ -62,7 +56,7 @@ const PerformanceAnalysisCard = ({
                 className="h-full bg-green-500 rounded-full"
                 style={{
                   width: `${
-                    (performanceMetrics.solvedProblems /
+                    (performanceMetrics.problemsSolved /
                       performanceMetrics.totalProblems) *
                     100
                   }%`,
@@ -77,7 +71,7 @@ const PerformanceAnalysisCard = ({
             <div className="flex items-center">
               <i className="fas fa-clock text-blue-500 mr-2"></i>
               <div className="text-3xl font-bold text-gray-800">
-                {performanceMetrics.averageTime}
+                {performanceMetrics.avgTimePerProblem}
               </div>
             </div>
             <div className="text-sm text-gray-500 mt-3">per solved problem</div>

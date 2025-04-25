@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "@/lib/db";
-import { generatePerformanceMetrics } from "@/lib/helpers/contestHelpers";
-// import { generatePerformanceMetrics } from "@/lib/helpers/contestHelpers";
+import {
+  generatePerformanceMetrics,
+  generateProblemAnalysisData,
+} from "@/lib/helpers/contestHelpers";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -117,7 +119,26 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // // problemAnalysis = {};
+  const serializedPerformanceMetrics = JSON.parse(
+    JSON.stringify(performanceMetrics)
+  );
+  serializedPerformanceMetrics.avgTimePerProblem = `${Math.ceil(
+    (performanceMetrics?.avgTimePerProblem || 0) / 60
+  )} min`;
+  serializedPerformanceMetrics.successRate = `${(
+    performanceMetrics?.successRate || 0
+  ).toFixed(1)} %`;
 
-  return new Response(JSON.stringify({ userSubmissions, performanceMetrics }));
+  const problemAnalysis = generateProblemAnalysisData(
+    userSubmissions,
+    contestProblems
+  );
+
+  return new Response(
+    JSON.stringify({
+      performanceMetrics: serializedPerformanceMetrics,
+      problemAnalysis,
+      contestProblems,
+    })
+  );
 }

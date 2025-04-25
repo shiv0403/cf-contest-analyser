@@ -30,12 +30,27 @@ export interface CfUserContest {
   newRating: number;
 }
 
+export interface UserContest {
+  contestId: number;
+  contestName: string;
+  handle: string;
+  rank: number;
+  oldRating: number;
+  newRating: number;
+  date: string;
+}
+
 export interface PerformanceMetrics {
+  id: number;
+  userHandle: string;
+  contestId: number;
   ratingChange: string;
-  solvedProblems: number;
+  problemsSolved: number;
   totalProblems: number;
-  averageTime: string;
-  successRate: string;
+  avgTimePerProblem: string;
+  successRate: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface UserSubmission {
@@ -69,4 +84,13 @@ export interface UserSubmission {
   passedTestCount: number;
   timeConsumedMillis: number;
   memoryConsumedBytes: number;
+}
+export interface ProblemAnalysisType {
+  id: string;
+  name: string;
+  index: string;
+  status: string;
+  timeTaken: string;
+  wrongAttempts: number;
+  difficulty: number;
 }

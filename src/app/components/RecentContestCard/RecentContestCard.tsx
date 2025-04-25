@@ -1,3 +1,4 @@
+import { UserContest } from "@/app/types/contest.types";
 import React from "react";
 
 const RecentContestCard = ({
@@ -14,7 +15,7 @@ const RecentContestCard = ({
     newRating: number;
     date: string;
   };
-  setSelectedContest: (id: string) => void;
+  setSelectedContest: (contest: UserContest) => void;
 }) => {
   const ratingChange = contest.newRating - contest.oldRating;
   const ratingChangeSign = ratingChange > 0 ? "+" : "-";
@@ -30,7 +31,7 @@ const RecentContestCard = ({
           ? "#10B981"
           : "#EF4444",
       }}
-      onClick={() => setSelectedContest(contest.contestId.toString())}
+      onClick={() => setSelectedContest(contest)}
     >
       <h3 className="font-semibold text-gray-800 mb-2 truncate">
         {contest.contestName}
