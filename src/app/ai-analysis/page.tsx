@@ -31,7 +31,7 @@ export default function AiAnalysisPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify({ userData, username }),
       });
 
       if (!response.ok) {

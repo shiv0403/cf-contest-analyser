@@ -1,13 +1,15 @@
 import { NextRequest } from "next/server";
 import { AiAnalysisResponse } from "@/app/types/ai-analysis";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { prisma } from "@/lib/db";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { submissions, performanceMetrics } = data;
+    const { submissions, performanceMetrics } = data.userData;
+    const userHandle = data.username;
 
     const prompt = `Analyze the following Codeforces user data and provide a detailed analysis in JSON format:
     
@@ -59,6 +61,36 @@ export async function POST(request: NextRequest) {
 
     const analysis = await getAiAnalysis(prompt);
 
+    const aiAnalysis = await prisma.aiAnalysis.findFirst({
+      where: {
+        userHandle: userHandle,
+      },
+    });
+
+    if (aiAnalysis) {
+      await prisma.aiAnalysis.update({
+        where: {
+          id: aiAnalysis.id,
+        },
+        data: {
+          insights: aiAnalysis.insights || {},
+          improvementPlan: aiAnalysis.improvementPlan || {},
+          recommendedProblems: aiAnalysis.recommendedProblems || {},
+          weakTopics: aiAnalysis.weakTopics || {},
+        },
+      });
+    } else {
+      await prisma.aiAnalysis.create({
+        data: {
+          userHandle: userHandle,
+          insights: analysis.insights || {},
+          improvementPlan: analysis.improvementPlan || {},
+          recommendedProblems: analysis.recommendedProblems || {},
+          weakTopics: analysis.weakTopics || {},
+        },
+      });
+    }
+
     return new Response(JSON.stringify(analysis));
   } catch (error) {
     console.error("Error in AI analysis:", error);
@@ -90,7 +122,7 @@ async function getAiAnalysis(prompt: string) {
     .replace(/'\s*\+\s*$/gm, "") // remove trailing '+ on each line
     .replace(/^\s*'\s*/, "") // remove leading ' on each line
     .trim();
-
+  console.log({ cleanText });
   const analysis = JSON.parse(cleanText) as AiAnalysisResponse;
   return analysis;
 }

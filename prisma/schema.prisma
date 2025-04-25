@@ -89,3 +89,14 @@ model PerformanceMetrics {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt @default(now())
 }
+
+model AiAnalysis {
+  id                  Int @id @default(autoincrement())
+  userHandle          String
+  insights            Json
+  improvementPlan     Json
+  recommendedProblems Json
+  weakTopics          Json
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
+}
