@@ -41,6 +41,9 @@ const Navbar = () => {
           >
             Contests
           </Link>
+          <Link href="/ai-analysis" className={getLinkCss("/ai-analysis")}>
+            AI Analysis
+          </Link>
           <Link href="/problems" className={getLinkCss("/problems")}>
             Problems
           </Link>

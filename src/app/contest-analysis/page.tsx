@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import RecentContestCard from "../components/RecentContestCard/RecentContestCard";
 import PerformanceAnalysis from "../components/PerformanceAnalysis/PerformanceAnalysis";
 import ProblemAnalysis from "../components/ProblemAnalysis/ProblemAnalysis";
-import AiAnalysis from "../components/AiAnalaysis/AiAnalysis";
+// import AiAnalysis from "../components/AiAnalaysis/AiAnalysis";
 import {
   PerformanceMetrics,
   ProblemAnalysisType,
@@ -89,78 +89,6 @@ const ContestAnalysis = () => {
       fetchContestDetails(selectedContest.contestId);
     }
   }, [selectedContest]);
-
-  const weakTopics = [
-    {
-      name: "Dynamic Programming",
-      proficiency: 35,
-      effort: "High",
-      problems: ["DP Subarray", "Knapsack Variation", "LCS Problem"],
-    },
-    {
-      name: "Graph Algorithms",
-      proficiency: 42,
-      effort: "Medium",
-      problems: ["DFS Application", "Shortest Path", "MST Problem"],
-    },
-    {
-      name: "Number Theory",
-      proficiency: 28,
-      effort: "High",
-      problems: ["Prime Factorization", "Modular Arithmetic", "GCD Problem"],
-    },
-  ];
-
-  // const problems = [
-  //   {
-  //     id: "A",
-  //     name: "Divide and Conquer",
-  //     status: "Solved",
-  //     timeTaken: "12 min",
-  //     wrongAttempts: 0,
-  //     difficulty: 800,
-  //   },
-  //   {
-  //     id: "B",
-  //     name: "Balanced Substring",
-  //     status: "Solved",
-  //     timeTaken: "24 min",
-  //     wrongAttempts: 1,
-  //     difficulty: 1100,
-  //   },
-  //   {
-  //     id: "C",
-  //     name: "Cyclic Permutations",
-  //     status: "Solved",
-  //     timeTaken: "45 min",
-  //     wrongAttempts: 2,
-  //     difficulty: 1400,
-  //   },
-  //   {
-  //     id: "D",
-  //     name: "Tree Queries",
-  //     status: "Solved",
-  //     timeTaken: "52 min",
-  //     wrongAttempts: 0,
-  //     difficulty: 1700,
-  //   },
-  //   {
-  //     id: "E",
-  //     name: "Divisibility Problem",
-  //     status: "Unsolved",
-  //     timeTaken: "-",
-  //     wrongAttempts: 3,
-  //     difficulty: 2100,
-  //   },
-  //   {
-  //     id: "F",
-  //     name: "Graph Coloring",
-  //     status: "Unsolved",
-  //     timeTaken: "-",
-  //     wrongAttempts: 0,
-  //     difficulty: 2400,
-  //   },
-  // ];
 
   const recentContests: Array<Contest> = userContests.slice(-4);
 
@@ -257,7 +185,7 @@ const ContestAnalysis = () => {
       <ProblemAnalysis problems={problemAnalysis} />
 
       {/* AI Analysis */}
-      <AiAnalysis weakTopics={weakTopics} />
+      {/* <AiAnalysis weakTopics={weakTopics} /> */}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React from "react";
+import { AiAnalysisResponse } from "@/app/types/ai-analysis";
 
 type WeakTopic = {
   name: string;
@@ -7,7 +8,15 @@ type WeakTopic = {
   problems: Array<string>;
 };
 
-const AiAnalysis = ({ weakTopics }: { weakTopics: Array<WeakTopic> }) => {
+const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
+  // Transform the AI analysis data to match the existing WeakTopic type
+  const weakTopics: WeakTopic[] = analysis.weakTopics.map((topic) => ({
+    name: topic.name,
+    proficiency: topic.proficiency,
+    effort: topic.effort,
+    problems: topic.problems,
+  }));
+
   return (
     <section className="mb-10">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">AI Analysis</h2>
@@ -51,10 +60,10 @@ const AiAnalysis = ({ weakTopics }: { weakTopics: Array<WeakTopic> }) => {
             Recommended Problems
           </h3>
           <div className="space-y-6">
-            {weakTopics.map((topic, index) => (
+            {analysis.recommendedProblems.map((topic, index) => (
               <div key={index}>
                 <h4 className="text-md font-medium text-gray-700 mb-3">
-                  {topic.name}
+                  {topic.topic}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {topic.problems.map((problem, pIndex) => (
@@ -63,27 +72,28 @@ const AiAnalysis = ({ weakTopics }: { weakTopics: Array<WeakTopic> }) => {
                       className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 cursor-pointer"
                     >
                       <div className="text-sm font-medium text-gray-800 mb-2">
-                        {problem}
+                        {problem.name}
                       </div>
                       <div className="flex justify-between items-center">
                         <span
                           className={`px-2 py-0.5 text-xs rounded-full ${
-                            pIndex === 0
+                            problem.difficulty === "Easy"
                               ? "bg-green-100 text-green-800"
-                              : pIndex === 1
+                              : problem.difficulty === "Medium"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-purple-100 text-purple-800"
                           }`}
                         >
-                          {pIndex === 0
-                            ? "Easy"
-                            : pIndex === 1
-                            ? "Medium"
-                            : "Hard"}
+                          {problem.difficulty}
                         </span>
-                        <button className="text-blue-500 hover:text-blue-700 text-sm !rounded-button whitespace-nowrap cursor-pointer">
+                        <a
+                          href={problem.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:text-blue-700 text-sm !rounded-button whitespace-nowrap cursor-pointer"
+                        >
                           <i className="fas fa-external-link-alt"></i> Solve
-                        </button>
+                        </a>
                       </div>
                     </div>
                   ))}
