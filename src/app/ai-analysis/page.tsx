@@ -68,6 +68,15 @@ export default function AiAnalysisPage() {
           >
             {loading ? "Analyzing..." : "Analyze"}
           </button>
+          {analysis && (
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 disabled:bg-red-300"
+            >
+              {loading ? "Re-Analyzing..." : "Re-Analyze"}
+            </button>
+          )}
         </div>
       </form>
 

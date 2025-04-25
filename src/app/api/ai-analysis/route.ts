@@ -5,6 +5,19 @@ import { prisma } from "@/lib/db";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const userHandle = searchParams.get("username");
+
+  const aiAnalysis = await prisma.aiAnalysis.findFirst({
+    where: {
+      userHandle: userHandle || "",
+    },
+  });
+
+  return new Response(JSON.stringify(aiAnalysis));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
@@ -116,12 +129,10 @@ async function getAiAnalysis(prompt: string) {
   const response = await result.response;
   const text = response.text();
   const cleanText = text
-    .replace(/^```json\s*/, "")
-    .replace(/```$/, "") // remove ending ```
-    .replace(/\\n/g, "") // remove literal \n (optional)
-    .replace(/'\s*\+\s*$/gm, "") // remove trailing '+ on each line
-    .replace(/^\s*'\s*/, "") // remove leading ' on each line
-    .trim();
+    .replace(/```json|```/g, "") // remove markdown code block markers
+    .replace(/\\n/g, "") // remove escaped newlines
+    .replace(/\s*\+\s*/g, "") // remove string concatenation symbols and extra spaces
+    .replace(/^'|';?$/g, ""); // remove outer single quotes or trailing semicolon
   console.log({ cleanText });
   const analysis = JSON.parse(cleanText) as AiAnalysisResponse;
   return analysis;
