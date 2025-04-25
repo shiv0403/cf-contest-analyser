@@ -40,7 +40,7 @@ const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
                   className={`h-full rounded-full ${
                     topic.proficiency < 30
                       ? "bg-red-500"
-                      : topic.proficiency < 50
+                      : topic.proficiency < 60
                       ? "bg-yellow-500"
                       : "bg-blue-500"
                   }`}
@@ -49,7 +49,7 @@ const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
               </div>
               <div className="flex justify-between mt-1">
                 <span className="text-xs text-gray-500">
-                  Effort needed: {topic.effort}
+                  Effort needed: {topic.effort.toLocaleUpperCase()}
                 </span>
               </div>
             </div>
