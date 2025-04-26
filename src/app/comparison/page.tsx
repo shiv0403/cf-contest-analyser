@@ -41,9 +41,6 @@ const Comparison = () => {
       "https://readdy.ai/api/search-image?query=professional%2520headshot%2520of%2520young%2520male%2520programmer%2520with%2520glasses%252C%2520neutral%2520expression%252C%2520clean%2520background%252C%2520high%2520quality%2520portrait%2520photo&width=100&height=100&seq=avatar2&orientation=squarish",
   };
 
-  // Sample recent searches
-  const recentSearches = ["AlgoChamp", "CodeNinja", "ByteMaster"];
-
   // Initialize rating comparison chart
   useEffect(() => {
     if (!compareWith) return;
@@ -446,30 +443,6 @@ const Comparison = () => {
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 />
                 <i className="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
-
-                {/* Recent searches dropdown */}
-                {selectedUser && (
-                  <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-sm">
-                    <div className="px-3 py-2 text-xs font-semibold text-gray-500">
-                      Recent searches
-                    </div>
-                    {recentSearches
-                      .filter((search) =>
-                        search
-                          .toLowerCase()
-                          .includes(selectedUser.toLowerCase())
-                      )
-                      .map((search, index) => (
-                        <div
-                          key={index}
-                          className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => handleCompareUser(search)}
-                        >
-                          {search}
-                        </div>
-                      ))}
-                  </div>
-                )}
               </div>
             </div>
 

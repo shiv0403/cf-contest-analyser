@@ -40,6 +40,10 @@ export interface UserContest {
   date: string;
 }
 
+export interface UserRatingChange extends UserContest {
+  ratingUpdateTimeSeconds: number;
+}
+
 export interface PerformanceMetrics {
   id: number;
   userHandle: string;
