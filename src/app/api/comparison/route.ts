@@ -1,4 +1,5 @@
 import {
+  CfUserInfo,
   Contest,
   UserRatingChange,
   UserSubmission,
@@ -71,8 +72,8 @@ export async function GET(request: NextRequest) {
 
   return new Response(
     JSON.stringify({
-      userInfo,
-      compareToUserInfo,
+      userInfo: serializeUserInfo(userInfo),
+      compareToUserInfo: serializeUserInfo(compareToUserInfo),
       ratingChartData: ratingChartData.formattedChartData,
       contestPerformanceComparison:
         ratingChartData.contestPerformanceComparison,
@@ -80,6 +81,17 @@ export async function GET(request: NextRequest) {
       topicProficiencyChartData,
     })
   );
+}
+
+function serializeUserInfo(userInfo: CfUserInfo) {
+  return {
+    username: userInfo.handle,
+    avatar: userInfo.avatar,
+    country: userInfo.country,
+    rank: userInfo.rank,
+    rating: userInfo.rating,
+    maxRating: userInfo.maxRating,
+  };
 }
 
 async function getUsersInfo(userHandle: string, compareToUserHandle: string) {

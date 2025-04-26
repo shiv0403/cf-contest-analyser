@@ -158,3 +158,31 @@ function getTimeTaken(
           ?.relativeTimeSeconds || 0;
   return `${Math.round(seconds / 60)} min`;
 }
+
+export function getRatingColors(rating: number | string) {
+  if (typeof rating === "string") {
+    rating = parseInt(rating);
+  }
+
+  if (rating < 1200) {
+    return "#CCCCCC"; // Grey
+  } else if (rating >= 1200 && rating < 1400) {
+    return "#77FF77"; // Green
+  } else if (rating >= 1400 && rating < 1600) {
+    return "#78DDBB"; // Cyan
+  } else if (rating >= 1600 && rating < 1900) {
+    return "#AAAAFF"; // Blue
+  } else if (rating >= 1900 && rating < 2100) {
+    return "#FF88FF"; // Purple
+  } else if (rating >= 2100 && rating < 2300) {
+    return "#FFCC88"; // Orange
+  } else if (rating >= 2300 && rating < 2400) {
+    return "#FFBB55"; // Yellow
+  } else if (rating >= 2400 && rating < 2600) {
+    return "#FF7777"; // Red
+  } else if (rating >= 2600 && rating < 3000) {
+    return "#FF3433"; // Dark Red
+  } else if (rating >= 3000) {
+    return "#AA0000";
+  }
+}

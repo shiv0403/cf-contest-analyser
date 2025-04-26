@@ -1,11 +1,57 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
+import { getRatingColors } from "@/lib/helpers/contestHelpers";
+import ContestStrip from "../components/Comparison/ContestStrip";
+
+type UserData = {
+  username: string;
+  avatar: string;
+  country: string;
+  rank: string;
+  rating: number;
+  maxRating: number;
+};
+
+type ContestPerformance = {
+  contestName: string;
+  contestDate: string;
+  userRatingChanges: string;
+  compareToUserRatingChanges: string;
+};
 
 const Comparison = () => {
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [compareWith, setCompareWith] = useState<string>("");
-  const [timeRange, setTimeRange] = useState<string>("6months");
+  const [timeRange, setTimeRange] = useState<string>("all");
+  const [currentUser, setCurrentUser] = useState<UserData>({
+    username: "",
+    avatar: "",
+    country: "",
+    rank: "",
+    rating: 0,
+    maxRating: 0,
+  });
+  const [compareUserData, setCompareUserData] = useState<UserData>({
+    username: "",
+    avatar: "",
+    country: "",
+    rank: "",
+    rating: 0,
+    maxRating: 0,
+  });
+  const [ratingChartData, setRatingChartData] = useState<
+    Record<string, Record<string, Array<number>>>
+  >({});
+  const [contestPerformanceComparison, setContestPerformanceComparison] =
+    useState<Array<ContestPerformance>>([]);
+  const [difficultyChartData, setDifficultyChartData] = useState<
+    Record<string, number[]>
+  >({});
+  const [topicProficiencyChartData, setTopicProficiencyChartData] = useState<
+    Record<string, Record<string, number>>
+  >({});
+  const [tags, setTags] = useState<string[]>([]);
 
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([
     "rating",
@@ -13,33 +59,6 @@ const Comparison = () => {
     "contests",
     "topics",
   ]);
-
-  // Sample user data
-  const currentUser = {
-    username: "CodeMaster",
-    rating: 1800,
-    maxRating: 1900,
-    problemsSolved: 450,
-    contestsParticipated: 75,
-    averageRatingChange: 25,
-    country: "United States",
-    rank: "Expert",
-    avatar:
-      "https://readdy.ai/api/search-image?query=professional%2520avatar%2520photo%2520of%2520a%2520programmer%252C%2520high%2520quality%252C%2520neutral%2520expression%252C%2520simple%2520background%252C%2520professional%2520headshot%2520style&width=100&height=100&seq=avatar1&orientation=squarish",
-  };
-
-  const compareUserData = {
-    username: "AlgoChamp",
-    rating: 2100,
-    maxRating: 2200,
-    problemsSolved: 650,
-    contestsParticipated: 120,
-    averageRatingChange: 15,
-    country: "Canada",
-    rank: "Master",
-    avatar:
-      "https://readdy.ai/api/search-image?query=professional%2520headshot%2520of%2520young%2520male%2520programmer%2520with%2520glasses%252C%2520neutral%2520expression%252C%2520clean%2520background%252C%2520high%2520quality%2520portrait%2520photo&width=100&height=100&seq=avatar2&orientation=squarish",
-  };
 
   // Initialize rating comparison chart
   useEffect(() => {
@@ -49,78 +68,9 @@ const Comparison = () => {
     if (chartDom) {
       const myChart = echarts.init(chartDom);
 
-      // Sample rating data - would be filtered based on timeRange in a real app
-      const ratingData = {
-        "1month": {
-          dates: ["Mar 10", "Mar 20", "Mar 28", "Apr 5", "Apr 10"],
-          user1: [1730, 1745, 1765, 1765, 1800],
-          user2: [2050, 2070, 2085, 2090, 2100],
-        },
-        "3months": {
-          dates: [
-            "Jan 15",
-            "Feb 2",
-            "Feb 20",
-            "Mar 10",
-            "Mar 20",
-            "Mar 28",
-            "Apr 5",
-            "Apr 10",
-          ],
-          user1: [1680, 1695, 1710, 1730, 1745, 1765, 1765, 1800],
-          user2: [1980, 2000, 2020, 2035, 2050, 2070, 2085, 2100],
-        },
-        "6months": {
-          dates: [
-            "Oct 5",
-            "Nov 10",
-            "Dec 15",
-            "Jan 15",
-            "Feb 2",
-            "Feb 20",
-            "Mar 10",
-            "Mar 20",
-            "Mar 28",
-            "Apr 5",
-            "Apr 10",
-          ],
-          user1: [
-            1600, 1625, 1650, 1680, 1695, 1710, 1730, 1745, 1765, 1765, 1800,
-          ],
-          user2: [
-            1900, 1920, 1950, 1980, 2000, 2020, 2035, 2050, 2070, 2085, 2100,
-          ],
-        },
-        year: {
-          dates: [
-            "Apr 2024",
-            "May 2024",
-            "Jun 2024",
-            "Jul 2024",
-            "Aug 2024",
-            "Sep 2024",
-            "Oct 2024",
-            "Nov 2024",
-            "Dec 2024",
-            "Jan 2025",
-            "Feb 2025",
-            "Mar 2025",
-            "Apr 2025",
-          ],
-          user1: [
-            1500, 1525, 1550, 1575, 1590, 1595, 1600, 1625, 1650, 1680, 1710,
-            1765, 1800,
-          ],
-          user2: [
-            1800, 1830, 1860, 1880, 1900, 1920, 1950, 1980, 2000, 2035, 2050,
-            2085, 2100,
-          ],
-        },
-      };
-
       const selectedData =
-        ratingData[timeRange as keyof typeof ratingData] ||
-        ratingData["6months"];
+        ratingChartData[timeRange as keyof typeof ratingChartData] ||
+        ratingChartData["6months"];
 
       const option = {
         animation: false,
@@ -170,11 +120,11 @@ const Comparison = () => {
             symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#3b82f6",
+              color: getRatingColors(currentUser.rating),
             },
             lineStyle: {
               width: 3,
-              color: "#3b82f6",
+              color: getRatingColors(currentUser.rating),
             },
           },
           {
@@ -185,11 +135,11 @@ const Comparison = () => {
             symbol: "circle",
             symbolSize: 8,
             itemStyle: {
-              color: "#f59e0b",
+              color: getRatingColors(compareUserData.rating),
             },
             lineStyle: {
               width: 3,
-              color: "#f59e0b",
+              color: getRatingColors(compareUserData.rating),
             },
           },
         ],
@@ -209,7 +159,7 @@ const Comparison = () => {
         myChart.dispose();
       };
     }
-  }, [timeRange, compareWith]);
+  }, [timeRange, ratingChartData]);
 
   // Initialize topic proficiency comparison chart
   useEffect(() => {
@@ -222,14 +172,10 @@ const Comparison = () => {
       const option = {
         animation: false,
         radar: {
-          indicator: [
-            { name: "Implementation", max: 100 },
-            { name: "Math", max: 100 },
-            { name: "Greedy", max: 100 },
-            { name: "Data Structures", max: 100 },
-            { name: "Dynamic Programming", max: 100 },
-            { name: "Graphs", max: 100 },
-          ],
+          indicator: tags.map((tag) => ({
+            name: tag,
+            max: 100,
+          })),
           radius: "65%",
           splitNumber: 4,
           axisName: {
@@ -260,7 +206,7 @@ const Comparison = () => {
             type: "radar",
             data: [
               {
-                value: [90, 85, 88, 75, 60, 65],
+                value: topicProficiencyChartData[currentUser.username],
                 name: currentUser.username,
                 symbol: "circle",
                 symbolSize: 8,
@@ -276,7 +222,7 @@ const Comparison = () => {
                 },
               },
               {
-                value: [75, 95, 80, 85, 90, 70],
+                value: topicProficiencyChartData[compareUserData.username],
                 name: compareUserData.username,
                 symbol: "circle",
                 symbolSize: 8,
@@ -310,7 +256,7 @@ const Comparison = () => {
         myChart.dispose();
       };
     }
-  }, [compareWith]);
+  }, [topicProficiencyChartData]);
 
   // Initialize difficulty distribution comparison chart
   useEffect(() => {
@@ -367,7 +313,7 @@ const Comparison = () => {
           {
             name: currentUser.username,
             type: "bar",
-            data: [120, 95, 85, 70, 45, 25, 10],
+            data: difficultyChartData[currentUser.username],
             itemStyle: {
               color: "#3b82f6",
             },
@@ -375,7 +321,7 @@ const Comparison = () => {
           {
             name: compareUserData.username,
             type: "bar",
-            data: [90, 110, 130, 100, 80, 70, 70],
+            data: difficultyChartData[compareUserData.username],
             itemStyle: {
               color: "#f59e0b",
             },
@@ -397,11 +343,30 @@ const Comparison = () => {
         myChart.dispose();
       };
     }
-  }, [compareWith]);
+  }, [difficultyChartData]);
 
   // Handle user selection
-  const handleCompareUser = (username: string) => {
-    setCompareWith(username);
+  const handleCompareUser = async () => {
+    try {
+      const comparisonResponse = await fetch(
+        `/api/comparison?userHandle=${selectedUser}&compareToUserHandle=${compareWith}`
+      );
+
+      const comparisonData = await comparisonResponse.json();
+      setCurrentUser(comparisonData.userInfo);
+      setCompareUserData(comparisonData.compareToUserInfo);
+      setRatingChartData(comparisonData.ratingChartData);
+      setTopicProficiencyChartData(
+        comparisonData.topicProficiencyChartData.normalizedProficiency
+      );
+      setDifficultyChartData(comparisonData.difficultyChartData);
+      setContestPerformanceComparison(
+        comparisonData.contestPerformanceComparison
+      );
+      setTags(comparisonData.topicProficiencyChartData.humanizedTags);
+    } catch (error) {
+      console.error("Error fetching comparison data:", error);
+    }
   };
 
   // Toggle metric selection
@@ -425,7 +390,26 @@ const Comparison = () => {
 
         {/* User Search Section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex items-end  md:flex-row md:space-x-4 ">
+          <div className="flex justify-around items-end  md:flex-row md:space-x-4 ">
+            <div className="flex-1 mb-4 md:mb-0">
+              <label
+                htmlFor="compare-search"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Your Username
+              </label>
+              <div className="relative">
+                <input
+                  id="compare-search"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+                <i className="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
+              </div>
+            </div>
             <div className="flex-1 mb-4 md:mb-0">
               <label
                 htmlFor="compare-search"
@@ -438,8 +422,8 @@ const Comparison = () => {
                   id="compare-search"
                   type="text"
                   placeholder="Enter username to compare"
-                  value={selectedUser}
-                  onChange={(e) => setSelectedUser(e.target.value)}
+                  value={compareWith}
+                  onChange={(e) => setCompareWith(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 />
                 <i className="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
@@ -448,7 +432,7 @@ const Comparison = () => {
 
             <div className="flex space-x-2">
               <button
-                onClick={() => handleCompareUser("AlgoChamp")}
+                onClick={() => handleCompareUser()}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium !rounded-button whitespace-nowrap cursor-pointer"
               >
                 <i className="fas fa-chart-bar mr-2"></i>
@@ -553,7 +537,7 @@ const Comparison = () => {
                         Max: {currentUser.maxRating}
                       </p>
                     </div>
-                    <div className="text-center">
+                    {/* <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">
                         Problems Solved
                       </p>
@@ -576,7 +560,7 @@ const Comparison = () => {
                       <p className="text-2xl font-bold text-green-600">
                         +{currentUser.averageRatingChange}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -620,7 +604,7 @@ const Comparison = () => {
                         Max: {compareUserData.maxRating}
                       </p>
                     </div>
-                    <div className="text-center">
+                    {/* <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">
                         Problems Solved
                       </p>
@@ -643,7 +627,7 @@ const Comparison = () => {
                       <p className="text-2xl font-bold text-green-600">
                         +{compareUserData.averageRatingChange}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -694,9 +678,9 @@ const Comparison = () => {
                         6M
                       </button>
                       <button
-                        onClick={() => setTimeRange("year")}
+                        onClick={() => setTimeRange("all")}
                         className={`px-3 py-1 text-xs font-medium rounded-lg !rounded-button whitespace-nowrap cursor-pointer ${
-                          timeRange === "year"
+                          timeRange === "all"
                             ? "bg-blue-100 text-blue-700"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
@@ -789,96 +773,9 @@ const Comparison = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        <tr>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                            Codeforces Round #900 (Div. 2)
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            April 10, 2025
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +35
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +15
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                            Codeforces Round #899 (Div. 1)
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            April 5, 2025
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              -15
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +45
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                            Educational Codeforces Round 165
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            March 28, 2025
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +20
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +10
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                            Codeforces Round #898 (Div. 2)
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            March 20, 2025
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +15
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              -5
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                            Codeforces Round #897 (Div. 2)
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            March 10, 2025
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +20
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              +25
-                            </span>
-                          </td>
-                        </tr>
+                        {contestPerformanceComparison.map((contest, index) => (
+                          <ContestStrip key={index} contestData={contest} />
+                        ))}
                       </tbody>
                     </table>
                   </div>

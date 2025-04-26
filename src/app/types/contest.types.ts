@@ -10,6 +10,25 @@ export interface Contest {
   relativeTimeSeconds: number;
 }
 
+export interface CfUserInfo {
+  lastName: string;
+  country: string;
+  lastOnlineTimeSeconds: number;
+  city: string;
+  rating: number;
+  friendOfCount: number;
+  titlePhoto: string;
+  handle: string;
+  avatar: string;
+  firstName: string;
+  contribution: number;
+  organization: string;
+  rank: string;
+  maxRating: number;
+  registrationTimeSeconds: number;
+  maxRank: string;
+}
+
 export interface CfProblem {
   contestId: number;
   index: string;
