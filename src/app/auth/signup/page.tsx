@@ -1,23 +1,14 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useActionState } from "react";
 import Link from "next/link";
+import { signup } from "@/app/actions/auth";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to dashboard on successful signup
-      window.location.href = "/dashboard";
-    }, 1000);
-  };
+  const [formState, formAction] = useActionState(signup, { errors: [] });
 
   return (
     <div className="min-h-screen bg-white">
@@ -63,7 +54,7 @@ export default function SignupPage() {
                   </p>
                 </div>
 
-                <form onSubmit={handleSignup} className="space-y-4">
+                <form action={formAction} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label
@@ -74,6 +65,7 @@ export default function SignupPage() {
                       </label>
                       <input
                         id="first-name"
+                        name="first-name"
                         placeholder="John"
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                         required
@@ -89,6 +81,7 @@ export default function SignupPage() {
                       </label>
                       <input
                         id="last-name"
+                        name="last-name"
                         placeholder="Doe"
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                         required
@@ -99,14 +92,15 @@ export default function SignupPage() {
 
                   <div className="space-y-2">
                     <label
-                      htmlFor="signup-username"
+                      htmlFor="codeforces-username"
                       className="block text-sm font-medium"
                     >
-                      Username
+                      Codeforces Username
                     </label>
                     <input
-                      id="signup-username"
-                      placeholder="Choose a username"
+                      name="codeforces-username"
+                      id="codeforces-username"
+                      placeholder="Enter your codeforces username"
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                       required
                       disabled={isLoading}
@@ -121,6 +115,7 @@ export default function SignupPage() {
                       Email
                     </label>
                     <input
+                      name="email"
                       id="signup-email"
                       type="email"
                       placeholder="name@example.com"
@@ -140,6 +135,7 @@ export default function SignupPage() {
                     <div className="relative">
                       <input
                         id="signup-password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none"
                         required
@@ -168,6 +164,7 @@ export default function SignupPage() {
                     </label>
                     <input
                       id="confirm-password"
+                      name="confirm-password"
                       type={showPassword ? "text" : "password"}
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                       required
@@ -208,6 +205,16 @@ export default function SignupPage() {
                       "Create Account"
                     )}
                   </button>
+
+                  {formState.errors && (
+                    <div className="mt-4">
+                      <ul className="list-disc list-inside text-red-500">
+                        {formState.errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   <div className="relative mt-6">
                     <div className="absolute inset-0 flex items-center">

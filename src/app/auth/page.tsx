@@ -66,14 +66,14 @@ export default function AuthPage() {
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <label
-                      htmlFor="username"
+                      htmlFor="email"
                       className="block text-sm font-medium"
                     >
-                      Username
+                      Email
                     </label>
                     <input
-                      id="username"
-                      placeholder="dope0403"
+                      id="email"
+                      placeholder="name@example.com"
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                       required
                       disabled={isLoading}
