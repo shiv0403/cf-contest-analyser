@@ -328,7 +328,15 @@ async function getTopicProficiencyChartData(
     [compareToUserHandle]: {},
   };
 
-  tags.forEach((tag) => {
+  // humanize the tags names
+  const humanizedTags = Array.from(tags).map((tag) => {
+    const words = tag.split(/(?=[A-Z])/);
+    return words
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  });
+
+  humanizedTags.forEach((tag) => {
     const count1 = topicProficiencyChartData[userHandle][tag] || 0;
     const count2 = topicProficiencyChartData[compareToUserHandle][tag] || 0;
     const maxCount = Math.max(count1, count2, 1); // prevent divide-by-zero
@@ -339,14 +347,6 @@ async function getTopicProficiencyChartData(
     normalizedProficiency[compareToUserHandle][tag] = Math.round(
       (count2 / maxCount) * 100
     );
-  });
-
-  // humanize the tags names
-  const humanizedTags = Array.from(tags).map((tag) => {
-    const words = tag.split(/(?=[A-Z])/);
-    return words
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
   });
 
   return { humanizedTags, normalizedProficiency };

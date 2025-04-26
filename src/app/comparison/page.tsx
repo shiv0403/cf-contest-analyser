@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
-import { getRatingColors } from "@/lib/helpers/contestHelpers";
+import { darkenHexColor, getRatingColors } from "@/lib/helpers/contestHelpers";
 import ContestStrip from "../components/Comparison/ContestStrip";
 
 type UserData = {
@@ -45,6 +45,7 @@ const Comparison = () => {
   >({});
   const [contestPerformanceComparison, setContestPerformanceComparison] =
     useState<Array<ContestPerformance>>([]);
+  const [visibleContestsCount, setVisibleContestsCount] = useState(5);
   const [difficultyChartData, setDifficultyChartData] = useState<
     Record<string, number[]>
   >({});
@@ -60,6 +61,10 @@ const Comparison = () => {
     "topics",
   ]);
 
+  const handleLoadMoreContests = () => {
+    setVisibleContestsCount((prevCount) => prevCount + 5);
+  };
+
   // Initialize rating comparison chart
   useEffect(() => {
     if (!compareWith) return;
@@ -73,7 +78,7 @@ const Comparison = () => {
         ratingChartData["6months"];
 
       const option = {
-        animation: false,
+        animation: true,
         tooltip: {
           trigger: "axis",
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,7 +164,7 @@ const Comparison = () => {
         myChart.dispose();
       };
     }
-  }, [timeRange, ratingChartData]);
+  }, [timeRange, ratingChartData, selectedMetrics]);
 
   // Initialize topic proficiency comparison chart
   useEffect(() => {
@@ -170,14 +175,15 @@ const Comparison = () => {
       const myChart = echarts.init(chartDom);
 
       const option = {
-        animation: false,
+        animation: true,
         radar: {
           indicator: tags.map((tag) => ({
             name: tag,
             max: 100,
           })),
-          radius: "65%",
-          splitNumber: 4,
+          radius: "80%",
+          center: ["50%", "50%"],
+          splitNumber: 8,
           axisName: {
             color: "#6b7280",
             fontSize: 12,
@@ -196,7 +202,7 @@ const Comparison = () => {
         },
         legend: {
           data: [currentUser.username, compareUserData.username],
-          bottom: 0,
+          right: 0,
         },
         tooltip: {
           trigger: "item",
@@ -218,7 +224,7 @@ const Comparison = () => {
                   color: "rgba(59, 130, 246, 0.8)",
                 },
                 itemStyle: {
-                  color: "#3b82f6",
+                  color: getRatingColors(currentUser.rating),
                 },
               },
               {
@@ -234,7 +240,7 @@ const Comparison = () => {
                   color: "rgba(245, 158, 11, 0.8)",
                 },
                 itemStyle: {
-                  color: "#f59e0b",
+                  color: getRatingColors(compareUserData.rating),
                 },
               },
             ],
@@ -256,7 +262,7 @@ const Comparison = () => {
         myChart.dispose();
       };
     }
-  }, [topicProficiencyChartData]);
+  }, [topicProficiencyChartData, selectedMetrics]);
 
   // Initialize difficulty distribution comparison chart
   useEffect(() => {
@@ -277,7 +283,7 @@ const Comparison = () => {
       ];
 
       const option = {
-        animation: false,
+        animation: true,
         tooltip: {
           trigger: "axis",
           axisPointer: {
@@ -315,7 +321,7 @@ const Comparison = () => {
             type: "bar",
             data: difficultyChartData[currentUser.username],
             itemStyle: {
-              color: "#3b82f6",
+              color: getRatingColors(currentUser.rating),
             },
           },
           {
@@ -323,7 +329,7 @@ const Comparison = () => {
             type: "bar",
             data: difficultyChartData[compareUserData.username],
             itemStyle: {
-              color: "#f59e0b",
+              color: getRatingColors(compareUserData.rating),
             },
           },
         ],
@@ -343,7 +349,7 @@ const Comparison = () => {
         myChart.dispose();
       };
     }
-  }, [difficultyChartData]);
+  }, [difficultyChartData, selectedMetrics]);
 
   // Handle user selection
   const handleCompareUser = async () => {
@@ -502,7 +508,12 @@ const Comparison = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Current User Profile */}
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="bg-blue-600 px-6 py-4">
+                <div
+                  className="px-6 py-4"
+                  style={{
+                    backgroundColor: getRatingColors(currentUser.rating),
+                  }}
+                >
                   <div className="flex items-center">
                     <img
                       src={currentUser.avatar}
@@ -517,7 +528,14 @@ const Comparison = () => {
                         <i className="fas fa-globe-americas mr-1.5 text-xs"></i>
                         <span className="text-sm">{currentUser.country}</span>
                         <span className="mx-2">•</span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-800 text-white">
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                          style={{
+                            backgroundColor: darkenHexColor(
+                              getRatingColors(currentUser.rating) || "#000000"
+                            ),
+                          }}
+                        >
                           {currentUser.rank}
                         </span>
                       </div>
@@ -567,7 +585,12 @@ const Comparison = () => {
 
               {/* Compare User Profile */}
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="bg-amber-500 px-6 py-4">
+                <div
+                  className="px-6 py-4"
+                  style={{
+                    backgroundColor: getRatingColors(compareUserData.rating),
+                  }}
+                >
                   <div className="flex items-center">
                     <img
                       src={compareUserData.avatar}
@@ -584,7 +607,15 @@ const Comparison = () => {
                           {compareUserData.country}
                         </span>
                         <span className="mx-2">•</span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-700 text-white">
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                          style={{
+                            backgroundColor: darkenHexColor(
+                              getRatingColors(compareUserData.rating) ||
+                                "#000000"
+                            ),
+                          }}
+                        >
                           {compareUserData.rank}
                         </span>
                       </div>
@@ -725,7 +756,7 @@ const Comparison = () => {
                   </p>
                 </div>
                 <div className="p-6">
-                  <div className="h-80" id="topic-comparison-chart"></div>
+                  <div className="h-100" id="topic-comparison-chart"></div>
                 </div>
               </div>
             )}
@@ -773,14 +804,19 @@ const Comparison = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {contestPerformanceComparison.map((contest, index) => (
-                          <ContestStrip key={index} contestData={contest} />
-                        ))}
+                        {contestPerformanceComparison
+                          .slice(0, visibleContestsCount)
+                          .map((contest, index) => (
+                            <ContestStrip key={index} contestData={contest} />
+                          ))}
                       </tbody>
                     </table>
                   </div>
                   <div className="mt-6 flex justify-center">
-                    <button className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 !rounded-button whitespace-nowrap cursor-pointer">
+                    <button
+                      onClick={handleLoadMoreContests}
+                      className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 !rounded-button whitespace-nowrap cursor-pointer"
+                    >
                       View more contests
                     </button>
                   </div>

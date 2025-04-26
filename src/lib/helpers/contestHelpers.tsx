@@ -186,3 +186,27 @@ export function getRatingColors(rating: number | string) {
     return "#AA0000";
   }
 }
+
+export function darkenHexColor(hex: string, amount = 20) {
+  // Remove # if present
+  hex = hex.replace(/^#/, "");
+
+  // Parse r, g, b
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+
+  // Decrease each channel but make sure it doesn't go below 0
+  r = Math.max(0, r - amount);
+  g = Math.max(0, g - amount);
+  b = Math.max(0, b - amount);
+
+  // Convert back to hex and pad with 0 if needed
+  const newHex =
+    "#" +
+    r.toString(16).padStart(2, "0") +
+    g.toString(16).padStart(2, "0") +
+    b.toString(16).padStart(2, "0");
+
+  return newHex;
+}
