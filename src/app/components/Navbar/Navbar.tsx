@@ -32,9 +32,6 @@ const Navbar = () => {
           </h1>
         </div>
         <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/" className={getLinkCss("/")}>
-            Dashboard
-          </Link>
           <Link
             href="/contest-analysis"
             className={getLinkCss("/contest-analysis")}
@@ -44,22 +41,12 @@ const Navbar = () => {
           <Link href="/ai-analysis" className={getLinkCss("/ai-analysis")}>
             AI Analysis
           </Link>
-          <Link href="/problems" className={getLinkCss("/problems")}>
-            Problems
-          </Link>
+
           <Link href="/comparison" className={getLinkCss("/comparison")}>
             Comparison
           </Link>
         </nav>
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search contests or problems..."
-              className="w-48 lg:w-64 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-            />
-            <i className="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-          </div>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
               JD
