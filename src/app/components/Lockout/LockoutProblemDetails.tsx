@@ -19,18 +19,19 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
       <td className="px-6 py-4 whitespace-nowrap">
         <span
           className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-            problem.submissions[0]?.verdict === "OK"
+            lockout.LockoutSubmissions[0]?.verdict === "OK"
               ? "bg-green-100 text-green-800"
               : "bg-blue-100 text-blue-800"
           }`}
         >
-          {problem.submissions[0]?.verdict ?? "Unsolved"}
+          {lockout.LockoutSubmissions[0]?.verdict ?? "Unsolved"}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {problem.submissions.length > 0 ? (
+        {lockout.LockoutSubmissions.length > 0 ? (
           <span>{`${Math.ceil(
-            (problem.submissions[0]?.creationTimeSeconds - lockout.startTime) /
+            (lockout.LockoutSubmissions[0]?.creationTimeSeconds -
+              lockout.startTime) /
               60
           )} mins`}</span>
         ) : (
@@ -38,9 +39,9 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {problem.submissions.length > 1 ? (
+        {lockout.LockoutSubmissions.length > 1 ? (
           <span>{`${Math.ceil(
-            (problem.submissions[1]?.creationTimeSeconds - lockout.startTime) /
+            (lockout.LockoutSubmissions[1]?.creationTimeSeconds - lockout.startTime) /
               60
           )} mins`}</span>
         ) : (

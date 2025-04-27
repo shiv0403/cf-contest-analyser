@@ -1,89 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Lockout } from "@prisma/client";
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import LockoutDetails from "../components/Lockout/LockoutDetails";
+import { Lockout } from "@prisma/client";
 
 const Lockouts = () => {
-  const lockouts: any = [
-    {
-      id: 1,
-      name: "Demo Lockout",
-      invitee: {
-        id: 14,
-        userHandle: "shiv@g.coma",
-        email: "shiv0403gupta@gmail.coma",
-        firstName: "Shivansh",
-        lastName: "Gupta",
-        avatarUrl: "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
-      },
-      status: "invited",
-      host: {
-        id: 1,
-        userHandle: "dope0403",
-        email: "shiv0403gupta@gmail.com",
-        firstName: "Shivansh",
-        lastName: "Gupta",
-        avatarUrl: "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
-      },
-      durationSeconds: 3600,
-      inviteCode: "123456",
-      problemIds: [2001, 2002, 2003],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 2,
-      name: "Demo Lockout",
-      invitee: {
-        id: 14,
-        userHandle: "shiv@g.coma",
-        email: "shiv0403gupta@gmail.coma",
-        firstName: "Shivansh",
-        lastName: "Gupta",
-        avatarUrl: "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
-      },
-      status: "invited",
-      host: {
-        id: 1,
-        userHandle: "dope0403",
-        email: "shiv0403gupta@gmail.com",
-        firstName: "Shivansh",
-        lastName: "Gupta",
-        avatarUrl: "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
-      },
-      durationSeconds: 3600,
-      inviteCode: "123456",
-      problemIds: [2001, 2002, 2003],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 3,
-      name: "Demo Lockout",
-      invitee: {
-        id: 14,
-        userHandle: "shiv@g.coma",
-        email: "shiv0403gupta@gmail.coma",
-        firstName: "Shivansh",
-        lastName: "Gupta",
-        avatarUrl: "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
-      },
-      status: "invited",
-      host: {
-        id: 1,
-        userHandle: "dope0403",
-        email: "shiv0403gupta@gmail.com",
-        firstName: "Shivansh",
-        lastName: "Gupta",
-        avatarUrl: "https://userpic.codeforces.org/422/title/50a270ed4a722867.jpg",
-      },
-      durationSeconds: 3600,
-      inviteCode: "123456",
-      problemIds: [2001, 2002, 2003],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
+  const session = { user: { id: 1 } }; // TODO: Replace this with actual session data
+  const [lockouts, setLockouts] = useState<Array<Lockout>>([]);
+
+  const fetchCurrentUserLockouts = async () => {
+    try {
+      const response = await fetch(`/api/lockout?userId=${session.user.id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch lockouts");
+      }
+      const data = await response.json();
+      setLockouts(data);
+    } catch (error) {
+      console.error("Error fetching lockouts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentUserLockouts();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">

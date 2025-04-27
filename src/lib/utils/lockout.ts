@@ -35,6 +35,10 @@ export const getUserLockouts = async (userId: number) => {
       where: {
         hostId: userId,
       },
+      include: {
+        host: true,
+        invitee: true,
+      },
     });
 
     return lockouts;
@@ -78,6 +82,46 @@ export const createPendingLockout = async (
   } catch (error) {
     console.error("Error creating lockout:", error);
     throw new Error("Failed to create lockout");
+  }
+};
+
+export const getAcceptedLockout = async (lockoutId: number) => {
+  try {
+    const lockout = await prisma.lockout.findUnique({
+      where: {
+        id: lockoutId,
+      },
+      include: {
+        host: true,
+        invitee: true,
+        LockoutSubmissions: {
+          include: {
+            submission: true,
+            problem: true,
+          },
+        },
+      },
+    });
+    if (!lockout) {
+      throw new Error("Lockout not found");
+    }
+
+    const lockoutProblems = await prisma.problem.findMany({
+      where: {
+        id: {
+          in: lockout.problemIds,
+        },
+      },
+    });
+    const problems = lockoutProblems.map((problem) => ({
+      id: problem.id,
+      name: problem.name,
+      link: `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`,
+    }));
+    return { lockout, problems };
+  } catch (error) {
+    console.error("Error fetching lockout:", error);
+    throw new Error("Failed to fetch lockout");
   }
 };
 

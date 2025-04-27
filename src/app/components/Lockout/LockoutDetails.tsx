@@ -4,14 +4,19 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import moment from "moment";
 
 const LockoutDetails = ({ lockout, index }: any) => {
-  const session = { user: { id: 14 } }; // TODO: Replace this with actual session data
+  const session = { user: { id: 1 } }; // TODO: Replace this with actual session data
   const router = useRouter();
 
   const handleJoinLockout = async () => {};
 
   const handleNavigate = () => {
+    if (lockout.status === "pending") {
+      alert("You cannot join a pending lockout");
+      return;
+    }
     router.push(`/lockout/${lockout.id}`);
   };
 
@@ -62,7 +67,9 @@ const LockoutDetails = ({ lockout, index }: any) => {
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{"27/04/2025"}</div>
+        <div className="text-sm text-gray-900">
+          {moment(lockout.createdAt).format("Do MMMM, YYYY")}
+        </div>
       </td>
       {session && session.user.id === lockout.invitee.id && (
         <td className="px-6 py-4 whitespace-nowrap">
