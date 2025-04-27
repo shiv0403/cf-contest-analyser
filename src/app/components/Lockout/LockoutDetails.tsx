@@ -2,15 +2,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const LockoutDetails = ({ lockout, index }: any) => {
   const session = { user: { id: 14 } }; // TODO: Replace this with actual session data
+  const router = useRouter();
 
   const handleJoinLockout = async () => {};
 
+  const handleNavigate = () => {
+    router.push(`/lockout/${lockout.id}`);
+  };
+
   return (
-    <tr key={lockout.id} className="hover:bg-gray-50">
+    <tr
+      key={lockout.id}
+      className="hover:bg-gray-50"
+      onClick={() => handleNavigate()}
+    >
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-medium">
@@ -44,7 +54,7 @@ const LockoutDetails = ({ lockout, index }: any) => {
             alt="Logo"
             width={24}
             height={24}
-            className="w-7 h-7 mr-2 rounded-xl"
+            className="w-8 h-8 mr-2 rounded-2xl"
           />
           <span>
             {lockout.invitee.firstName + " " + lockout.invitee.lastName}
