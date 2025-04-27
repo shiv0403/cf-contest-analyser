@@ -127,7 +127,7 @@ model Lockout {
   host                User @relation("HostLockouts", fields: [hostId], references: [id])
   winnerId            Int?
   winner              User? @relation("WinnerLockouts", fields: [winnerId], references: [id])
-  durationSeconds     Int
+  durationSeconds     Int?
   startTime           DateTime?
   endTime             DateTime?
   inviteCode          String

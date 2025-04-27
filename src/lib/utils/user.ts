@@ -1,6 +1,7 @@
 import { UserCreateParams } from "@/app/types/user";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "../helpers/auth";
+import { User } from "@prisma/client";
 
 export const getUserByEmail = async (email: string) => {
   const user = await prisma.user.findUnique({
@@ -54,4 +55,8 @@ export const createUser = async (userParams: UserCreateParams) => {
   });
 
   return user;
+};
+
+export const getUserFullName = (user: User) => {
+  return `${user.firstName} ${user.lastName}`;
 };
