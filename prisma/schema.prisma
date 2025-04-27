@@ -120,14 +120,16 @@ model User {
 
 model Lockout {
   id                  Int @id @default(autoincrement())
+  name                String
   inviteeId           Int
   invitee             User @relation("InviteeLockouts", fields: [inviteeId], references: [id])
   hostId              Int
   host                User @relation("HostLockouts", fields: [hostId], references: [id])
   winnerId            Int?
   winner              User? @relation("WinnerLockouts", fields: [winnerId], references: [id])
-  startTime           DateTime
-  endTime             DateTime
+  durationSeconds     Int
+  startTime           DateTime?
+  endTime             DateTime?
   inviteCode          String
   status              String
   problemIds          Int[]

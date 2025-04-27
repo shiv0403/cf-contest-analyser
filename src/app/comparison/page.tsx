@@ -61,6 +61,8 @@ const Comparison = () => {
     "topics",
   ]);
 
+  const session = true; // TODO: Replace with actual session check when implelent auth
+
   const handleLoadMoreContests = () => {
     setVisibleContestsCount((prevCount) => prevCount + 5);
   };
@@ -375,6 +377,8 @@ const Comparison = () => {
     }
   };
 
+  const handleCreateLockout = async () => {};
+
   // Toggle metric selection
   const toggleMetric = (metric: string) => {
     if (selectedMetrics.includes(metric)) {
@@ -502,6 +506,16 @@ const Comparison = () => {
                   Topics
                 </button>
               </div>
+              {session && (
+                <div>
+                  <button
+                    onClick={() => handleCreateLockout()}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium !rounded-button whitespace-nowrap cursor-pointer"
+                  >
+                    Create Lockout
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* User Profile Cards */}

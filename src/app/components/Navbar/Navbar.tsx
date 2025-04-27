@@ -38,12 +38,14 @@ const Navbar = () => {
           >
             Contests
           </Link>
-          <Link href="/ai-analysis" className={getLinkCss("/ai-analysis")}>
-            AI Analysis
-          </Link>
-
           <Link href="/comparison" className={getLinkCss("/comparison")}>
             Comparison
+          </Link>
+          <Link href="/lockout" className={getLinkCss("/lockout")}>
+            Lockout
+          </Link>
+          <Link href="/ai-analysis" className={getLinkCss("/ai-analysis")}>
+            AI Analysis
           </Link>
         </nav>
         <div className="flex items-center space-x-4">
