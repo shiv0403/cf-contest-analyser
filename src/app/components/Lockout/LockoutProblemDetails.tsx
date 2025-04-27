@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Submission } from "@prisma/client";
+import moment from "moment";
 import React from "react";
 
 const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
@@ -41,7 +43,8 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {lockout.LockoutSubmissions.length > 1 ? (
           <span>{`${Math.ceil(
-            (lockout.LockoutSubmissions[1]?.creationTimeSeconds - lockout.startTime) /
+            (lockout.LockoutSubmissions[1]?.creationTimeSeconds -
+              lockout.startTime) /
               60
           )} mins`}</span>
         ) : (
@@ -49,7 +52,18 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{"27/04/2025"}</div>
+        <div className="text-sm text-gray-900">
+          {lockout.LockoutSubmissions.length > 0
+            ? moment
+                .unix(
+                  lockout.LockoutSubmissions.sort(
+                    (a: Submission, b: Submission) =>
+                      a.creationTimeSeconds - b.creationTimeSeconds
+                  )[0].creationTimeSeconds
+                )
+                .format("HH:mm")
+            : "-"}
+        </div>
       </td>
     </tr>
   );

@@ -4,6 +4,7 @@ import LiveTimer from "@/app/components/Lockout/LiveTimer";
 import LockoutProblemDetails from "@/app/components/Lockout/LockoutProblemDetails";
 import { LockoutResponse } from "@/app/types/contest.types";
 import { Problem } from "@prisma/client";
+import moment from "moment";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -44,7 +45,7 @@ const LockoutPage = () => {
             <h2 className="text-2xl font-bold text-gray-800">{lockout.name}</h2>
             <div>
               {/* Live Timer which is decreasing till the lockout end time */}
-              <LiveTimer endTime={1745775436000} />
+              <LiveTimer endTime={moment(lockout.endTime).unix() * 1000} />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
