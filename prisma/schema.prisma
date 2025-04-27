@@ -33,18 +33,19 @@ model Contest {
 }
 
 model Problem {
-  id                  Int @id @default(autoincrement())
-  contestId           Int
-  contest             Contest @relation(fields: [contestId], references: [contestId])
-  index               String
-  name                String
-  type                String
-  points              Int
-  rating              Int
-  tags                String[]
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt @default(now())
-  submissions         Submission[]
+  id                    Int @id @default(autoincrement())
+  contestId             Int
+  contest               Contest @relation(fields: [contestId], references: [contestId])
+  index                 String
+  name                  String
+  type                  String
+  points                Int
+  rating                Int
+  tags                  String[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt @default(now())
+  submissions           Submission[]
+  lockoutSubmissions    LockoutSubmission[]
 }
 
 model UserContest {
@@ -74,6 +75,7 @@ model Submission {
   memoryConsumedBytes Int?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt @default(now())
+  lockoutSubmission   LockoutSubmission?
 }
 
 model PerformanceMetrics {
@@ -111,4 +113,38 @@ model User {
   avatarUrl          String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt @default(now())
+  hostedLockouts     Lockout[] @relation("HostLockouts")
+  invitedLockouts    Lockout[] @relation("InviteeLockouts")
+  winnerLockouts     Lockout[] @relation("WinnerLockouts")
+}
+
+model Lockout {
+  id                  Int @id @default(autoincrement())
+  inviteeId           Int
+  invitee             User @relation("InviteeLockouts", fields: [inviteeId], references: [id])
+  hostId              Int
+  host                User @relation("HostLockouts", fields: [hostId], references: [id])
+  winnerId            Int?
+  winner              User? @relation("WinnerLockouts", fields: [winnerId], references: [id])
+  startTime           DateTime
+  endTime             DateTime
+  inviteCode          String
+  status              String
+  problemIds          Int[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
+  LockoutSubmissions  LockoutSubmission[]
+}
+
+model LockoutSubmission {
+  id                  Int @id @default(autoincrement())
+  lockoutId           Int
+  lockout             Lockout @relation(fields: [lockoutId], references: [id])
+  userHandle          String
+  problemId           Int
+  problem             Problem @relation(fields: [problemId], references: [id])
+  submissionId        Int @unique
+  submission          Submission @relation(fields: [submissionId], references: [id])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt @default(now())
 }
