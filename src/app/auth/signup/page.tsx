@@ -5,10 +5,24 @@ import { useState, useActionState } from "react";
 import Link from "next/link";
 import { signup } from "@/app/actions/auth";
 
+type FormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  password: string;
+  confirmPassword: string;
+};
+
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formState, formAction] = useActionState(signup, { errors: [] });
+  const [formState, formAction, isLoading] = useActionState(signup, {
+    errors: [],
+    user: { firstName: "", lastName: "", email: "", username: "" },
+    success: false,
+    message: "",
+    values: {},
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -70,6 +84,9 @@ export default function SignupPage() {
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                         required
                         disabled={isLoading}
+                        defaultValue={
+                          (formState.values as FormValues)?.firstName ?? ""
+                        }
                       />
                     </div>
                     <div className="space-y-2">
@@ -86,6 +103,9 @@ export default function SignupPage() {
                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                         required
                         disabled={isLoading}
+                        defaultValue={
+                          (formState.values as FormValues)?.lastName ?? ""
+                        }
                       />
                     </div>
                   </div>
@@ -104,6 +124,9 @@ export default function SignupPage() {
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                       required
                       disabled={isLoading}
+                      defaultValue={
+                        (formState.values as FormValues)?.username ?? ""
+                      }
                     />
                   </div>
 
@@ -122,6 +145,9 @@ export default function SignupPage() {
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                       required
                       disabled={isLoading}
+                      defaultValue={
+                        (formState.values as FormValues)?.email ?? ""
+                      }
                     />
                   </div>
 
@@ -140,6 +166,9 @@ export default function SignupPage() {
                         className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none"
                         required
                         disabled={isLoading}
+                        defaultValue={
+                          (formState.values as FormValues)?.password ?? ""
+                        }
                       />
                       <button
                         type="button"
@@ -169,6 +198,9 @@ export default function SignupPage() {
                       className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                       required
                       disabled={isLoading}
+                      defaultValue={
+                        (formState.values as FormValues)?.confirmPassword ?? ""
+                      }
                     />
                   </div>
 
