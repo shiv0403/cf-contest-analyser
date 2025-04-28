@@ -1,4 +1,4 @@
-import { Lockout, User } from "@prisma/client";
+import { Lockout, LockoutSubmission, Submission, User } from "@prisma/client";
 
 export interface Contest {
   id: number;
@@ -123,4 +123,8 @@ export interface ProblemAnalysisType {
 export interface LockoutResponse extends Lockout {
   invitee: User;
   host: User;
+}
+
+export interface LockoutSubmissionResponse extends LockoutSubmission {
+  submission: Submission;
 }

@@ -1,12 +1,17 @@
-import { Problem } from "@prisma/client";
+import { Prisma, Problem } from "@prisma/client";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import { prisma } from "@/lib/db";
 import { getUserFullName } from "./user";
 import { getUserRating } from "./codeforces";
 import { getProblemsFromContestIdAndIndex } from "./problem";
+import { UserSubmission } from "@/app/types/contest.types";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
+
+type LockoutWithUsers = Prisma.LockoutGetPayload<{
+  include: { host: true; invitee: true };
+}>;
 
 export const getLockout = async (lockoutId: number) => {
   try {
@@ -45,6 +50,100 @@ export const getUserLockouts = async (userId: number) => {
   } catch (error) {
     console.error("Error fetching user lockouts:", error);
     throw new Error("Failed to fetch user lockouts");
+  }
+};
+
+export const createLockoutSubmissions = async (
+  lockout: LockoutWithUsers,
+  problemIdVsSubmissionHost: Record<number, UserSubmission>,
+  problemIdVsSubmissionInvitee: Record<number, UserSubmission>
+) => {
+  try {
+    if (
+      !lockout ||
+      !problemIdVsSubmissionHost ||
+      !problemIdVsSubmissionInvitee
+    ) {
+      throw new Error("Invalid Lockout or submissions");
+    }
+
+    // for host
+    const lockoutSubmissionsData = [];
+    for (const problemId in problemIdVsSubmissionHost) {
+      const hostSubmission = problemIdVsSubmissionHost[problemId];
+      const existingSubmission = await prisma.submission.findFirst({
+        where: {
+          contestId: hostSubmission.contestId,
+          userHandle: lockout.host.userHandle,
+          problemId: parseInt(problemId),
+        },
+      });
+      console.log({ hostSubmission });
+      if (!existingSubmission) {
+        const submission = await prisma.submission.create({
+          data: {
+            contestId: hostSubmission.contestId,
+            problemId: parseInt(problemId),
+            userHandle: lockout.host.userHandle,
+            verdict: hostSubmission.verdict,
+            language: hostSubmission.programmingLanguage,
+            creationTimeSeconds: hostSubmission.creationTimeSeconds,
+            relativeTimeSeconds: hostSubmission.relativeTimeSeconds,
+            timeConsumedMillis: hostSubmission.timeConsumedMillis,
+            memoryConsumedBytes: hostSubmission.memoryConsumedBytes,
+          },
+        });
+        lockoutSubmissionsData.push({
+          lockoutId: lockout.id,
+          submissionId: submission.id,
+          problemId: parseInt(problemId),
+          userHandle: lockout.host.userHandle,
+        });
+      }
+    }
+
+    // for invitee
+    for (const problemId in problemIdVsSubmissionInvitee) {
+      const inviteeSubmission = problemIdVsSubmissionInvitee[problemId];
+      const existingSubmission = await prisma.submission.findFirst({
+        where: {
+          contestId: inviteeSubmission.contestId,
+          userHandle: lockout.invitee.userHandle,
+          problemId: parseInt(problemId),
+        },
+      });
+      if (!existingSubmission) {
+        const submission = await prisma.submission.create({
+          data: {
+            contestId: inviteeSubmission.contestId,
+            problemId: parseInt(problemId), // Use the map to get the problemId
+            userHandle: lockout.invitee.userHandle,
+            verdict: inviteeSubmission.verdict,
+            language: inviteeSubmission.programmingLanguage,
+            creationTimeSeconds: inviteeSubmission.creationTimeSeconds,
+            relativeTimeSeconds: inviteeSubmission.relativeTimeSeconds,
+            timeConsumedMillis: inviteeSubmission.timeConsumedMillis,
+            memoryConsumedBytes: inviteeSubmission.memoryConsumedBytes,
+          },
+        });
+        lockoutSubmissionsData.push({
+          lockoutId: lockout.id,
+          submissionId: submission.id,
+          problemId: parseInt(problemId),
+          userHandle: lockout.invitee.userHandle,
+        });
+      }
+    }
+
+    // bulk create lockout submissions
+    await prisma.lockoutSubmission.createMany({
+      data: lockoutSubmissionsData,
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error creating lockout submissions:", error);
+    throw new Error("Failed to create lockout submissions");
   }
 };
 

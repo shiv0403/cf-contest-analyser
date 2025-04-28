@@ -58,8 +58,6 @@ export async function GET(request: NextRequest) {
     return acc;
   }, {} as Record<string, number>);
 
-  console.log({ problemIndexToIdMap });
-
   const submissionData = newSubmissions.map((submission: any) => ({
     contestId: submission.contestId,
     problemId: problemIndexToIdMap[submission.problem.index], // Use the map to get the problemId
