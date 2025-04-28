@@ -14,8 +14,18 @@ const LockoutPage = () => {
   const [lockout, setLockout] = useState<LockoutResponse | null>(null);
   const [lockoutProblems, setLockoutProblems] = useState<Array<Problem>>([]);
 
+  const POLLING_INTERVAL = 5000;
+
   const fetchLockoutDetails = async () => {
     try {
+      const submissionResponse = await fetch(
+        `/api/lockout/submission?lockoutId=${lockoutId}`
+      );
+
+      if (!submissionResponse.ok) {
+        throw new Error("Failed fetching users lockout submissions");
+      }
+
       const response = await fetch(
         `/api/lockout/accept?lockoutId=${lockoutId}`
       );
@@ -34,6 +44,10 @@ const LockoutPage = () => {
 
   useEffect(() => {
     fetchLockoutDetails();
+
+    // polling
+    const intervalId = setInterval(fetchLockoutDetails, POLLING_INTERVAL);
+    return () => clearInterval(intervalId);
   }, [lockoutId]);
 
   return (

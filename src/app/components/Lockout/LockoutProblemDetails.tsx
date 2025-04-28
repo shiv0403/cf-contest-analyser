@@ -27,8 +27,6 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
           (submission: { userHandle: string }) =>
             submission.userHandle === lockout.invitee.userHandle
         )[0];
-        setLockoutSubmissionHost(hostSubmission);
-        setLockoutSubmissionInvitee(inviteeSubmission);
 
         let solveTime = Infinity;
         if (hostSubmission) {
@@ -44,6 +42,8 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
           );
         }
         setSolvedAt(solveTime);
+        setLockoutSubmissionHost(hostSubmission);
+        setLockoutSubmissionInvitee(inviteeSubmission);
       }
     }
   }, [lockout, problem, solvedAt]);
