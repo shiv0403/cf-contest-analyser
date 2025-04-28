@@ -340,3 +340,81 @@ const randomString = (len = 6) =>
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]
     )
     .join("");
+
+export const evaluateLockoutWinner = async (lockoutId: number) => {
+  try {
+    const lockout = await prisma.lockout.findFirst({
+      where: {
+        id: lockoutId,
+      },
+      include: {
+        host: true,
+        invitee: true,
+        LockoutSubmissions: {
+          include: {
+            submission: true,
+          },
+        },
+      },
+    });
+
+    if (!lockout) {
+      throw new Error(`Lockout with id: ${lockoutId} not found`);
+    }
+
+    const lockoutSubmissions = lockout.LockoutSubmissions;
+    if (lockoutSubmissions.length > 0) {
+      const hostSubmissions = lockoutSubmissions.filter(
+        (sb) => sb.submission.userHandle === lockout.host.userHandle
+      );
+      const inviteeSubmissions = lockoutSubmissions.filter(
+        (sb) => sb.submission.userHandle === lockout.invitee.userHandle
+      );
+
+      // No winner
+      if (hostSubmissions.length === 0 && inviteeSubmissions.length === 0) {
+        return false;
+      }
+
+      let winnerId = -1;
+      if (hostSubmissions.length === inviteeSubmissions.length) {
+        // find the fastest completion time
+        const hostMaxTime = Math.max(
+          ...hostSubmissions.map((sb) => sb.submission.creationTimeSeconds)
+        );
+        const inviteeMaxTime = Math.max(
+          ...inviteeSubmissions.map((sb) => sb.submission.creationTimeSeconds)
+        );
+
+        if (hostMaxTime > inviteeMaxTime) {
+          winnerId = lockout.inviteeId;
+        } else if (hostMaxTime < inviteeMaxTime) {
+          winnerId = lockout.hostId;
+        }
+      } else if (hostSubmissions.length > inviteeSubmissions.length) {
+        winnerId = lockout.hostId;
+      } else if (hostSubmissions.length < inviteeSubmissions.length) {
+        winnerId = lockout.inviteeId;
+      }
+
+      if (winnerId !== -1) {
+        await prisma.lockout.update({
+          where: {
+            id: lockoutId,
+          },
+          data: {
+            winnerId,
+          },
+        });
+      } else {
+        return false;
+      }
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log("Failed to evaluate lockout winner", error);
+    throw new Error(`Failed to evaluate lockout ${lockoutId} winner`);
+  }
+};
