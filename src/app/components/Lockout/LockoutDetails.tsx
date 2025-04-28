@@ -10,7 +10,23 @@ const LockoutDetails = ({ lockout, index }: any) => {
   const session = { user: { id: 1 } }; // TODO: Replace this with actual session data
   const router = useRouter();
 
-  const handleJoinLockout = async () => {};
+  const handleJoinLockout = async () => {
+    try {
+      const response = await fetch(`/api/lockout/accept`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ lockoutId: lockout.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to Join the lockout contest");
+      }
+    } catch (error) {
+      console.error("Error Joining lockout contest:", error);
+    }
+  };
 
   const handleNavigate = () => {
     if (lockout.status === "pending") {
