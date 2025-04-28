@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const { hostId, inviteeId } = data;
 
-    if (!hostId) {
+    if (!hostId || !inviteeId) {
       return new Response("Insufficient Parameters", {
         status: 400,
       });

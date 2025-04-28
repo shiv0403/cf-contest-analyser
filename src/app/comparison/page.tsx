@@ -5,6 +5,7 @@ import { darkenHexColor, getRatingColors } from "@/lib/helpers/contestHelpers";
 import ContestStrip from "../components/Comparison/ContestStrip";
 
 type UserData = {
+  id: number;
   username: string;
   avatar: string;
   country: string;
@@ -24,22 +25,8 @@ const Comparison = () => {
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [compareWith, setCompareWith] = useState<string>("");
   const [timeRange, setTimeRange] = useState<string>("all");
-  const [currentUser, setCurrentUser] = useState<UserData>({
-    username: "",
-    avatar: "",
-    country: "",
-    rank: "",
-    rating: 0,
-    maxRating: 0,
-  });
-  const [compareUserData, setCompareUserData] = useState<UserData>({
-    username: "",
-    avatar: "",
-    country: "",
-    rank: "",
-    rating: 0,
-    maxRating: 0,
-  });
+  const [currentUser, setCurrentUser] = useState<UserData>();
+  const [compareUserData, setCompareUserData] = useState<UserData>();
   const [ratingChartData, setRatingChartData] = useState<
     Record<string, Record<string, Array<number>>>
   >({});
@@ -69,7 +56,7 @@ const Comparison = () => {
 
   // Initialize rating comparison chart
   useEffect(() => {
-    if (!compareWith) return;
+    if (!currentUser || !compareUserData) return;
 
     const chartDom = document.getElementById("rating-comparison-chart");
     if (chartDom) {
@@ -170,7 +157,7 @@ const Comparison = () => {
 
   // Initialize topic proficiency comparison chart
   useEffect(() => {
-    if (!compareWith) return;
+    if (!currentUser || !compareUserData) return;
 
     const chartDom = document.getElementById("topic-comparison-chart");
     if (chartDom) {
@@ -268,7 +255,7 @@ const Comparison = () => {
 
   // Initialize difficulty distribution comparison chart
   useEffect(() => {
-    if (!compareWith) return;
+    if (!currentUser || !compareUserData) return;
 
     const chartDom = document.getElementById("difficulty-comparison-chart");
     if (chartDom) {
@@ -377,7 +364,30 @@ const Comparison = () => {
     }
   };
 
-  const handleCreateLockout = async () => {};
+  const handleCreateLockout = async () => {
+    if (!currentUser || !compareUserData) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/lockout/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          hostId: currentUser.id,
+          inviteeId: compareUserData.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed creating lockout contest");
+      }
+    } catch (error) {
+      console.log("Error creating lockout contest", error);
+    }
+  };
 
   // Toggle metric selection
   const toggleMetric = (metric: string) => {
@@ -453,7 +463,7 @@ const Comparison = () => {
         </div>
 
         {/* Comparison Content */}
-        {compareWith && (
+        {currentUser && compareUserData && (
           <>
             {/* Comparison Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -853,7 +863,7 @@ const Comparison = () => {
         )}
 
         {/* Empty State */}
-        {!compareWith && (
+        {!currentUser && !compareUserData && (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-blue-100 mb-6">
               <i className="fas fa-chart-bar text-blue-600 text-4xl"></i>

@@ -7,7 +7,7 @@ import React from "react";
 import moment from "moment";
 
 const LockoutDetails = ({ lockout, index }: any) => {
-  const session = { user: { id: 1 } }; // TODO: Replace this with actual session data
+  const session = { user: { id: 14 } }; // TODO: Replace this with actual session data
   const router = useRouter();
 
   const handleJoinLockout = async () => {

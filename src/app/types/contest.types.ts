@@ -13,6 +13,7 @@ export interface Contest {
 }
 
 export interface CfUserInfo {
+  id?: number;
   lastName: string;
   country: string;
   lastOnlineTimeSeconds: number;

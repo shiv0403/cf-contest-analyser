@@ -38,7 +38,7 @@ export const getUserLockouts = async (userId: number) => {
   try {
     const lockouts = await prisma.lockout.findMany({
       where: {
-        hostId: userId,
+        OR: [{ hostId: userId }, { inviteeId: userId }],
       },
       include: {
         host: true,

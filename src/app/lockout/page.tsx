@@ -6,7 +6,7 @@ import LockoutDetails from "../components/Lockout/LockoutDetails";
 import { Lockout } from "@prisma/client";
 
 const Lockouts = () => {
-  const session = { user: { id: 1 } }; // TODO: Replace this with actual session data
+  const session = { user: { id: 14 } }; // TODO: Replace this with actual session data
   const [lockouts, setLockouts] = useState<Array<Lockout>>([]);
 
   const fetchCurrentUserLockouts = async () => {

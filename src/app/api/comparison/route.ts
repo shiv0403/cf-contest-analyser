@@ -28,14 +28,18 @@ export async function GET(request: NextRequest) {
   }
 
   const result = await getUsersInfo(userHandle, compareToUserHandle);
-  if (result.status === 500) {
-    return new Response(result.errorMessage, {
-      status: result.status,
+  if (result.errorMessage) {
+    return new Response(JSON.stringify(result.errorMessage), {
+      status: 500,
     });
   }
 
-  const userInfo = result.result[0];
-  const compareToUserInfo = result.result[1];
+  const userInfo = result[userHandle];
+  const compareToUserInfo = result[compareToUserHandle];
+
+  if (typeof userInfo === "string" || typeof compareToUserInfo === "string") {
+    throw new Error("Invalid data received");
+  }
 
   const usersSubmissions = await getUsersSubmissions(
     userHandle,
@@ -85,6 +89,7 @@ export async function GET(request: NextRequest) {
 
 function serializeUserInfo(userInfo: CfUserInfo) {
   return {
+    id: userInfo.id,
     username: userInfo.handle,
     avatar: userInfo.avatar,
     country: userInfo.country,
@@ -102,10 +107,32 @@ async function getUsersInfo(userHandle: string, compareToUserHandle: string) {
   if (data.status !== "OK") {
     return {
       errorMessage: `Error fetching user info data: ${data.comment}`,
-      status: 500,
     };
   }
-  return data;
+
+  const users = await prisma.user.findMany({
+    where: {
+      userHandle: {
+        in: [data.result[0].handle, data.result[1].handle],
+      },
+    },
+  });
+
+  if (!users || users.length < 2) {
+    return {
+      errorMessage: `Error fetching user info data: ${data.comment}`,
+    };
+  }
+
+  const userHandleVsUserInfo: Record<string, CfUserInfo | string> = {};
+  data.result.forEach((userInfo: CfUserInfo) => {
+    userHandleVsUserInfo[userInfo.handle] = {
+      ...userInfo,
+      id: users.find((user) => user.userHandle === userInfo.handle)?.id,
+    };
+  });
+
+  return userHandleVsUserInfo;
 }
 
 async function getRatingChartData(
