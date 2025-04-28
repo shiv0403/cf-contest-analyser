@@ -78,7 +78,7 @@ export const createLockoutSubmissions = async (
           problemId: parseInt(problemId),
         },
       });
-      console.log({ hostSubmission });
+
       if (!existingSubmission) {
         const submission = await prisma.submission.create({
           data: {
