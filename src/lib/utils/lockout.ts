@@ -404,6 +404,7 @@ export const evaluateLockoutWinner = async (lockoutId: number) => {
           },
           data: {
             winnerId,
+            status: "completed",
           },
         });
       } else {
