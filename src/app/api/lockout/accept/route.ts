@@ -1,4 +1,5 @@
 import { enqueueLockoutWinnerEval } from "@/lib/queues/lockoutQueue";
+import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
 import { acceptLockout, getAcceptedLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 
@@ -12,10 +13,14 @@ export async function GET(request: NextRequest) {
       });
     }
     const { lockout, problems } = await getAcceptedLockout(lockoutId);
-    return new Response(JSON.stringify({ lockout, problems }), {
-      status: 200,
-      statusText: "OK",
-    });
+
+    return new Response(
+      JSON.stringify({ lockout: lockoutSerializer(lockout), problems }),
+      {
+        status: 200,
+        statusText: "OK",
+      }
+    );
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error in lockout route:", error.message);
@@ -48,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Schedule a worker which will run at the end time of the lockout and evaluate the winner of the contest. Use bullmq for this.
     enqueueLockoutWinnerEval(lockout.id);
 
-    return new Response(JSON.stringify(lockout), {
+    return new Response(JSON.stringify(lockoutSerializer(lockout)), {
       status: 200,
       statusText: "OK",
     });

@@ -1,3 +1,4 @@
+import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
 import { getUserSubmissionsForLockoutProblem } from "@/lib/utils/codeforces";
 import { createLockoutSubmissions, getLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
       problemIdVsSubmissionInvitee
     );
 
-    return new Response(JSON.stringify(lockout), {
+    return new Response(JSON.stringify(lockoutSerializer(lockout)), {
       status: 200,
       statusText: "OK",
     });

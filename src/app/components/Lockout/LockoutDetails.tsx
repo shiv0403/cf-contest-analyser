@@ -87,16 +87,18 @@ const LockoutDetails = ({ lockout, index }: any) => {
           {moment(lockout.createdAt).format("Do MMMM, YYYY")}
         </div>
       </td>
-      {session && session.user.id === lockout.invitee.id && (
-        <td className="px-6 py-4 whitespace-nowrap">
-          <button
-            onClick={() => handleJoinLockout()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium !rounded-button whitespace-nowrap cursor-pointer"
-          >
-            Join
-          </button>
-        </td>
-      )}
+      {session &&
+        session.user.id === lockout.invitee.id &&
+        lockout.status === "invited" && (
+          <td className="px-6 py-4 whitespace-nowrap">
+            <button
+              onClick={() => handleJoinLockout()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium !rounded-button whitespace-nowrap cursor-pointer"
+            >
+              Join
+            </button>
+          </td>
+        )}
     </tr>
   );
 };

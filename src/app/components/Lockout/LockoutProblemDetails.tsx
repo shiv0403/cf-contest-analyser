@@ -12,12 +12,14 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
   const [solvedAt, setSolvedAt] = useState(Infinity);
 
   useEffect(() => {
-    const lockoutSubmissions = lockout.LockoutSubmissions;
+    const lockoutSubmissions = lockout.lockoutSubmissions;
+
     if (lockoutSubmissions.length > 0) {
       const problemSubmissions = lockoutSubmissions.filter(
-        (submission: { problem: { id: number } }) =>
-          submission.problem.id === problem.id
+        (lkSubmission: { submission: { problem: { id: number } } }) =>
+          lkSubmission.submission.problem.id === problem.id
       );
+
       if (problemSubmissions.length > 0) {
         const hostSubmission = problemSubmissions.filter(
           (submission: { userHandle: string }) =>
@@ -41,6 +43,7 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
             inviteeSubmission.submission.creationTimeSeconds
           );
         }
+
         setSolvedAt(solveTime);
         setLockoutSubmissionHost(hostSubmission);
         setLockoutSubmissionInvitee(inviteeSubmission);

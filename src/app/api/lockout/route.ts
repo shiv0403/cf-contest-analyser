@@ -1,3 +1,4 @@
+import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
 import { getUserLockouts } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 
@@ -13,8 +14,9 @@ export async function GET(request: NextRequest) {
     }
 
     const lockouts = await getUserLockouts(userId);
+    const serializedLockouts = lockouts.map((lc) => lockoutSerializer(lc));
 
-    return new Response(JSON.stringify(lockouts), {
+    return new Response(JSON.stringify(serializedLockouts), {
       status: 200,
       statusText: "OK",
     });

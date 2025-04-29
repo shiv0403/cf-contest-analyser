@@ -1,3 +1,4 @@
+import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
 import { createPendingLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Create Lockout request
     const lockout = await createPendingLockout(hostId, inviteeId);
 
-    return new Response(JSON.stringify(lockout), {
+    return new Response(JSON.stringify(lockoutSerializer(lockout)), {
       status: 200,
       statusText: "OK",
     });

@@ -1,4 +1,4 @@
-import { Prisma, Problem } from "@prisma/client";
+import { Problem } from "@prisma/client";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import { prisma } from "@/lib/db";
@@ -6,12 +6,9 @@ import { getUserFullName } from "./user";
 import { getUserRating } from "./codeforces";
 import { getProblemsFromContestIdAndIndex } from "./problem";
 import { UserSubmission } from "@/app/types/contest.types";
+import { LockoutWithUsers } from "@/app/types/lockout";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
-
-type LockoutWithUsers = Prisma.LockoutGetPayload<{
-  include: { host: true; invitee: true };
-}>;
 
 export const getLockout = async (lockoutId: number) => {
   try {
@@ -22,6 +19,7 @@ export const getLockout = async (lockoutId: number) => {
       include: {
         host: true,
         invitee: true,
+        winner: true,
       },
     });
     if (!lockout) {
@@ -43,6 +41,7 @@ export const getUserLockouts = async (userId: number) => {
       include: {
         host: true,
         invitee: true,
+        winner: true,
       },
     });
 
@@ -168,6 +167,11 @@ export const createPendingLockout = async (
     }
 
     const pendingLockout = await prisma.lockout.create({
+      include: {
+        host: true,
+        winner: true,
+        invitee: true,
+      },
       data: {
         name: `Lockout-${getUserFullName(host)}-${getUserFullName(invitee)}`,
         hostId: host.id,
@@ -193,10 +197,14 @@ export const getAcceptedLockout = async (lockoutId: number) => {
       include: {
         host: true,
         invitee: true,
+        winner: true,
         LockoutSubmissions: {
           include: {
-            submission: true,
-            problem: true,
+            submission: {
+              include: {
+                problem: true,
+              },
+            },
           },
         },
       },
@@ -231,6 +239,11 @@ export const acceptLockout = async (lockoutId: number) => {
     const lockout = await prisma.lockout.update({
       where: {
         id: lockoutId,
+      },
+      include: {
+        host: true,
+        invitee: true,
+        winner: true,
       },
       data: {
         status: "active",

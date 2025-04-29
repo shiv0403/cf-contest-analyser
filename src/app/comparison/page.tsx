@@ -541,6 +541,8 @@ const Comparison = () => {
                 >
                   <div className="flex items-center">
                     <Image
+                      width={56}
+                      height={56}
                       src={currentUser.avatar}
                       alt={currentUser.username}
                       className="w-16 h-16 rounded-full border-2 border-white"
@@ -620,6 +622,8 @@ const Comparison = () => {
                     <Image
                       src={compareUserData.avatar}
                       alt={compareUserData.username}
+                      width={56}
+                      height={56}
                       className="w-16 h-16 rounded-full border-2 border-white"
                     />
                     <div className="ml-4 text-white">
