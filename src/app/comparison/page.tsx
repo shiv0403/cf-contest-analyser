@@ -5,6 +5,7 @@ import { darkenHexColor, getRatingColors } from "@/lib/helpers/contestHelpers";
 import ContestStrip from "../components/Comparison/ContestStrip";
 import Image from "next/image";
 import ComparisonSkeleton from "../components/Comparison/ComparisonSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 type UserData = {
   id: number;
@@ -24,6 +25,7 @@ type ContestPerformance = {
 };
 
 const Comparison = () => {
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [compareWith, setCompareWith] = useState<string>("");
   const [timeRange, setTimeRange] = useState<string>("all");
@@ -42,7 +44,7 @@ const Comparison = () => {
     Record<string, Record<string, number>>
   >({});
   const [tags, setTags] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isComparing, setIsComparing] = useState(false);
 
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([
     "rating",
@@ -52,6 +54,13 @@ const Comparison = () => {
   ]);
 
   const session = true; // TODO: Replace with actual session check when implelent auth
+
+  // Set the selected user to the logged-in user's handle when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.userHandle) {
+      setSelectedUser(user.userHandle);
+    }
+  }, [isAuthenticated, user]);
 
   const handleLoadMoreContests = () => {
     setVisibleContestsCount((prevCount) => prevCount + 5);
@@ -347,7 +356,7 @@ const Comparison = () => {
   const handleCompareUser = async () => {
     if (!selectedUser.trim() || !compareWith.trim()) return;
 
-    setIsLoading(true);
+    setIsComparing(true);
     try {
       const comparisonResponse = await fetch(
         `/api/comparison?userHandle=${selectedUser}&compareToUserHandle=${compareWith}`
@@ -368,7 +377,7 @@ const Comparison = () => {
     } catch (error) {
       console.error("Error fetching comparison data:", error);
     } finally {
-      setIsLoading(false);
+      setIsComparing(false);
     }
   };
 
@@ -406,7 +415,7 @@ const Comparison = () => {
     }
   };
 
-  if (isLoading) {
+  if (isAuthLoading) {
     return <ComparisonSkeleton />;
   }
 
@@ -423,25 +432,28 @@ const Comparison = () => {
         {/* User Search Section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label
-                htmlFor="compare-search"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Your Username
-              </label>
-              <div className="relative">
-                <input
-                  id="compare-search"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={selectedUser}
-                  onChange={(e) => setSelectedUser(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                />
-                <i className="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
+            {!isAuthenticated && !isAuthLoading && (
+              <div className="flex-1">
+                <label
+                  htmlFor="compare-search"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Your Username
+                </label>
+                <div className="relative">
+                  <input
+                    id="compare-search"
+                    type="text"
+                    placeholder="Enter your username"
+                    value={selectedUser}
+                    onChange={(e) => setSelectedUser(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                    disabled={isComparing}
+                  />
+                  <i className="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex-1">
               <label
                 htmlFor="compare-with"
@@ -457,6 +469,7 @@ const Comparison = () => {
                   value={compareWith}
                   onChange={(e) => setCompareWith(e.target.value)}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  disabled={isComparing}
                 />
                 <i className="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
               </div>
@@ -464,17 +477,65 @@ const Comparison = () => {
             <div className="flex items-end">
               <button
                 onClick={handleCompareUser}
-                disabled={!selectedUser.trim() || !compareWith.trim()}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium"
+                disabled={
+                  !selectedUser.trim() || !compareWith.trim() || isComparing
+                }
+                className={`px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium relative overflow-hidden ${
+                  isComparing ? "animate-pulse" : ""
+                }`}
               >
-                Compare
+                {isComparing ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Comparing...
+                  </span>
+                ) : (
+                  "Compare"
+                )}
               </button>
             </div>
           </div>
         </div>
 
         {/* Comparison Content */}
-        {currentUser && compareUserData && (
+        {isComparing ? (
+          <div className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
+            <div className="space-y-4">
+              {/* User Profile Cards Skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2].map((i) => (
+                  <div key={i} className="bg-gray-100 rounded-lg h-48"></div>
+                ))}
+              </div>
+
+              {/* Charts Skeleton */}
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-gray-100 rounded-lg h-64"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : currentUser && compareUserData ? (
           <>
             {/* Comparison Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -811,10 +872,10 @@ const Comparison = () => {
               </div>
             )}
           </>
-        )}
+        ) : null}
 
         {/* Empty State */}
-        {!currentUser && !compareUserData && (
+        {!currentUser && !compareUserData && !isComparing && (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-red-100 mb-6">
               <i className="fas fa-chart-bar text-red-600 text-4xl"></i>
