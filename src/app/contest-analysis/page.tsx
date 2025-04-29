@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import RecentContestCard from "../components/RecentContestCard/RecentContestCard";
 import PerformanceAnalysis from "../components/PerformanceAnalysis/PerformanceAnalysis";
 import ProblemAnalysis from "../components/ProblemAnalysis/ProblemAnalysis";
+import PerformanceAnalysisSkeleton from "../components/PerformanceAnalysis/PerformanceAnalysisSkeleton";
+import ProblemAnalysisSkeleton from "../components/ProblemAnalysis/ProblemAnalysisSkeleton";
+import ContestSelectionSkeleton from "../components/ContestSelection/ContestSelectionSkeleton";
 // import AiAnalysis from "../components/AiAnalaysis/AiAnalysis";
 import {
   PerformanceMetrics,
@@ -25,6 +28,8 @@ const ContestAnalysis = () => {
   const [selectedContest, setSelectedContest] = useState<UserContest | null>(
     null
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const userHandle = "swapniltyagi";
   const [userContests, setUserContests] = useState<Array<Contest>>([]);
@@ -34,6 +39,7 @@ const ContestAnalysis = () => {
     useState<PerformanceMetrics>();
 
   const fetchUserContests = async () => {
+    setIsInitialLoading(true);
     try {
       const response = await fetch(
         `/api/userContests?userHandle=${userHandle}`
@@ -45,10 +51,13 @@ const ContestAnalysis = () => {
       setUserContests(data || []);
     } catch (error) {
       console.error("Error fetching user contests:", error);
+    } finally {
+      setIsInitialLoading(false);
     }
   };
 
   const fetchContestDetails = async (contestId: number) => {
+    setIsLoading(true);
     try {
       const response = await fetch(
         `/api/userSubmissions?contestId=${contestId}&userHandle=${userHandle}`
@@ -61,7 +70,8 @@ const ContestAnalysis = () => {
       setPerformanceMetrics(data.performanceMetrics);
     } catch (error) {
       console.error("Error fetching contest details:", error);
-      return [];
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,53 +91,65 @@ const ContestAnalysis = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <section className="mb-10">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
-            Select Contest
-          </h2>
-        </div>
-        <div className="relative mb-8">
-          <select
-            value={selectedContest?.contestId}
-            onChange={(e) => {
-              const selectedContestId = parseInt(e.target.value);
-              const contest = userContests.find(
-                (c) => c.contestId === selectedContestId
-              );
-              setSelectedContest(contest || null);
-            }}
-            className="w-full md:w-1/2 px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
-          >
-            <option value="">Select a contest...</option>
-            {userContests.map((contest) => (
-              <option key={contest.contestId} value={contest.contestId}>
-                {contest.contestName} ({contest.date})
-              </option>
-            ))}
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
-            <i className="fas fa-chevron-down"></i>
+      {isInitialLoading ? (
+        <ContestSelectionSkeleton />
+      ) : (
+        <section className="mb-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+              Select Contest
+            </h2>
           </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {recentContests.map((contest) => (
-            <RecentContestCard
-              key={contest.contestId}
-              contest={contest}
-              setSelectedContest={setSelectedContest}
-            />
-          ))}
-        </div>
-      </section>
+          <div className="relative mb-8">
+            <select
+              value={selectedContest?.contestId}
+              onChange={(e) => {
+                const selectedContestId = parseInt(e.target.value);
+                const contest = userContests.find(
+                  (c) => c.contestId === selectedContestId
+                );
+                setSelectedContest(contest || null);
+              }}
+              className="w-full md:w-1/2 px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
+            >
+              <option value="">Select a contest...</option>
+              {userContests.map((contest) => (
+                <option key={contest.contestId} value={contest.contestId}>
+                  {contest.contestName} ({contest.date})
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+              <i className="fas fa-chevron-down"></i>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentContests.map((contest) => (
+              <RecentContestCard
+                key={contest.contestId}
+                contest={contest}
+                setSelectedContest={setSelectedContest}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Performace analysis */}
-      {performanceMetrics && (
-        <PerformanceAnalysis performanceMetrics={performanceMetrics} />
+      {/* Performance analysis */}
+      {isLoading ? (
+        <PerformanceAnalysisSkeleton />
+      ) : (
+        performanceMetrics && (
+          <PerformanceAnalysis performanceMetrics={performanceMetrics} />
+        )
       )}
 
       {/* Problem analysis */}
-      {problemAnalysis && <ProblemAnalysis problems={problemAnalysis} />}
+      {isLoading ? (
+        <ProblemAnalysisSkeleton />
+      ) : (
+        problemAnalysis && <ProblemAnalysis problems={problemAnalysis} />
+      )}
     </div>
   );
 };
