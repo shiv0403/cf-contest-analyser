@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Lockout } from "@prisma/client";
 "use client";
 import React, { useEffect, useState } from "react";
 import LockoutDetails from "../components/Lockout/LockoutDetails";
@@ -70,7 +68,7 @@ const Lockouts = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {lockouts.map((lockout: { id: any }, index: number) => (
+                {lockouts.map((lockout: { id: number }, index: number) => (
                   <LockoutDetails
                     key={lockout.id}
                     index={index}
