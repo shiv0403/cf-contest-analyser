@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
   });
 
   // Get and store performance metrics for the contest of the user
-  const performanceMetrics = await prisma.performanceMetrics.findFirst({
+  let performanceMetrics = await prisma.performanceMetrics.findFirst({
     where: {
       userHandle: userHandle,
       contestId: parseInt(contestId),
@@ -99,20 +99,20 @@ export async function GET(request: NextRequest) {
   });
 
   if (!performanceMetrics) {
-    const performanceMetrics = generatePerformanceMetrics(
+    const performanceMetricsData = generatePerformanceMetrics(
       userSubmissions,
       userHandle,
       contestProblems
     );
-    await prisma.performanceMetrics.create({
+    performanceMetrics = await prisma.performanceMetrics.create({
       data: {
         userHandle: userHandle,
         contestId: parseInt(contestId),
-        ratingChange: performanceMetrics.ratingChange,
-        problemsSolved: performanceMetrics.solvedProblems,
-        totalProblems: performanceMetrics.totalProblems,
-        avgTimePerProblem: performanceMetrics.averageTime,
-        successRate: performanceMetrics.successRate,
+        ratingChange: performanceMetricsData.ratingChange,
+        problemsSolved: performanceMetricsData.solvedProblems,
+        totalProblems: performanceMetricsData.totalProblems,
+        avgTimePerProblem: performanceMetricsData.averageTime,
+        successRate: performanceMetricsData.successRate,
       },
     });
   }

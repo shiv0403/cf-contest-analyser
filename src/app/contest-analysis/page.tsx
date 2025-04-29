@@ -25,26 +25,13 @@ const ContestAnalysis = () => {
   const [selectedContest, setSelectedContest] = useState<UserContest | null>(
     null
   );
-  const [timeFilter, setTimeFilter] = useState("all");
 
-  const userHandle = "dope0403";
-  const [userContests, setUserContests] = useState([]);
-  const [problemAnalysis, setProblemAnalysis] = useState<ProblemAnalysisType[]>(
-    []
-  );
+  const userHandle = "swapniltyagi";
+  const [userContests, setUserContests] = useState<Array<Contest>>([]);
+  const [problemAnalysis, setProblemAnalysis] =
+    useState<ProblemAnalysisType[]>();
   const [performanceMetrics, setPerformanceMetrics] =
-    useState<PerformanceMetrics>({
-      id: 0,
-      userHandle: "",
-      contestId: 0,
-      ratingChange: "",
-      problemsSolved: 0,
-      totalProblems: 0,
-      avgTimePerProblem: "0 min",
-      successRate: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    useState<PerformanceMetrics>();
 
   const fetchUserContests = async () => {
     try {
@@ -72,8 +59,6 @@ const ContestAnalysis = () => {
       const data = await response.json();
       setProblemAnalysis(data.problemAnalysis);
       setPerformanceMetrics(data.performanceMetrics);
-
-      console.log(data.problemAnalysis, data.performanceMetrics);
     } catch (error) {
       console.error("Error fetching contest details:", error);
       return [];
@@ -101,55 +86,13 @@ const ContestAnalysis = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
             Select Contest
           </h2>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setTimeFilter("month")}
-              className={`px-4 py-2 rounded-button text-sm font-medium whitespace-nowrap cursor-pointer ${
-                timeFilter === "month"
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-700 border border-gray-300"
-              }`}
-            >
-              Last Month
-            </button>
-            <button
-              onClick={() => setTimeFilter("3months")}
-              className={`px-4 py-2 rounded-button text-sm font-medium whitespace-nowrap cursor-pointer ${
-                timeFilter === "3months"
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-700 border border-gray-300"
-              }`}
-            >
-              Last 3 Months
-            </button>
-            <button
-              onClick={() => setTimeFilter("6months")}
-              className={`px-4 py-2 rounded-button text-sm font-medium whitespace-nowrap cursor-pointer ${
-                timeFilter === "6months"
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-700 border border-gray-300"
-              }`}
-            >
-              Last 6 Months
-            </button>
-            <button
-              onClick={() => setTimeFilter("all")}
-              className={`px-4 py-2 rounded-button text-sm font-medium whitespace-nowrap cursor-pointer ${
-                timeFilter === "all"
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-700 border border-gray-300"
-              }`}
-            >
-              All Time
-            </button>
-          </div>
         </div>
         <div className="relative mb-8">
           <select
             value={selectedContest?.contestId}
             onChange={(e) => {
               const selectedContestId = parseInt(e.target.value);
-              const contest = recentContests.find(
+              const contest = userContests.find(
                 (c) => c.contestId === selectedContestId
               );
               setSelectedContest(contest || null);
@@ -157,7 +100,7 @@ const ContestAnalysis = () => {
             className="w-full md:w-1/2 px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
           >
             <option value="">Select a contest...</option>
-            {recentContests.map((contest) => (
+            {userContests.map((contest) => (
               <option key={contest.contestId} value={contest.contestId}>
                 {contest.contestName} ({contest.date})
               </option>
@@ -179,13 +122,12 @@ const ContestAnalysis = () => {
       </section>
 
       {/* Performace analysis */}
-      <PerformanceAnalysis performanceMetrics={performanceMetrics} />
+      {performanceMetrics && (
+        <PerformanceAnalysis performanceMetrics={performanceMetrics} />
+      )}
 
       {/* Problem analysis */}
-      <ProblemAnalysis problems={problemAnalysis} />
-
-      {/* AI Analysis */}
-      {/* <AiAnalysis weakTopics={weakTopics} /> */}
+      {problemAnalysis && <ProblemAnalysis problems={problemAnalysis} />}
     </div>
   );
 };
