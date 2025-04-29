@@ -13,7 +13,7 @@ const Navbar = () => {
       "text-gray-800 font-medium hover:text-red-500 cursor-pointer";
     const isActiveCss =
       "text-red-500 font-medium border-b-2 border-red-500 cursor-pointer";
-    return pathName === path ? isActiveCss : isNotActiveCss;
+    return pathName.includes(path) ? isActiveCss : isNotActiveCss;
   };
 
   return (
