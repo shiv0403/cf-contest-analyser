@@ -84,7 +84,7 @@ const Navbar = () => {
                 </span>
               </div>
               <button
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => signOut({ callbackUrl: "/auth" })}
                 className="rounded-md bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600"
               >
                 Sign out

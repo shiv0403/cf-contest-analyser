@@ -7,6 +7,7 @@ import PerformanceAnalysisSkeleton from "../components/PerformanceAnalysis/Perfo
 import ProblemAnalysisSkeleton from "../components/ProblemAnalysis/ProblemAnalysisSkeleton";
 import ContestSelectionSkeleton from "../components/ContestSelection/ContestSelectionSkeleton";
 import HandleInput from "../components/HandleInput/HandleInput";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   PerformanceMetrics,
   ProblemAnalysisType,
@@ -25,13 +26,13 @@ type Contest = {
 };
 
 const ContestAnalysis = () => {
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [selectedContest, setSelectedContest] = useState<UserContest | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [userHandle, setUserHandle] = useState<string>("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
   const [userContests, setUserContests] = useState<Array<Contest>>([]);
@@ -40,35 +41,22 @@ const ContestAnalysis = () => {
   const [performanceMetrics, setPerformanceMetrics] =
     useState<PerformanceMetrics>();
 
-  // Check if user is logged in and get their handle
+  // Initialize userHandle from auth context
   useEffect(() => {
-    // TODO: Replace with actual auth check
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/session");
-        console.log({ authResponse: response });
-        const data = await response.json();
-        if (data?.user?.userHandle) {
-          setUserHandle(data.user.userHandle);
-          setIsLoggedIn(true);
-          setHasSearched(true);
-          fetchUserContests();
-        }
-      } catch (error) {
-        console.error("Error checking auth status:", error);
-      }
-    };
-    checkAuth();
-  }, []);
+    if (user?.userHandle) {
+      setUserHandle(user.userHandle);
+      setHasSearched(true);
+      fetchUserContests();
+    }
+  }, [user]);
 
   const fetchUserContests = async () => {
-    if (!userHandle) return;
+    const handle = user?.userHandle || userHandle;
+    if (!handle) return;
 
     setIsInitialLoading(true);
     try {
-      const response = await fetch(
-        `/api/userContests?userHandle=${userHandle}`
-      );
+      const response = await fetch(`/api/userContests?userHandle=${handle}`);
       if (!response.ok) {
         throw new Error("Failed to fetch user contests");
       }
@@ -82,12 +70,13 @@ const ContestAnalysis = () => {
   };
 
   const fetchContestDetails = async (contestId: number) => {
-    if (!userHandle) return;
+    const handle = user?.userHandle || userHandle;
+    if (!handle) return;
 
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/userSubmissions?contestId=${contestId}&userHandle=${userHandle}`
+        `/api/userSubmissions?contestId=${contestId}&userHandle=${handle}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch contest details");
@@ -121,10 +110,14 @@ const ContestAnalysis = () => {
 
   const recentContests: Array<Contest> = userContests.slice(-4);
 
+  if (isAuthLoading) {
+    return <ContestSelectionSkeleton />;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="">
-        {!isLoggedIn && (
+        {!isAuthenticated && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8">
             <div className="flex items-end gap-3">
               <div className="flex-1">
@@ -171,7 +164,7 @@ const ContestAnalysis = () => {
           </div>
         )}
 
-        {isLoggedIn && userHandle && (
+        {isAuthenticated && userHandle && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8">
             <div className="flex items-center gap-2">
               <span className="text-gray-600">Viewing contests for:</span>
@@ -180,7 +173,7 @@ const ContestAnalysis = () => {
           </div>
         )}
 
-        {!hasSearched && !isLoggedIn && (
+        {!hasSearched && !isAuthenticated && (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-red-100 mb-6">
               <i className="fas fa-chart-line text-red-600 text-4xl"></i>
