@@ -106,9 +106,18 @@ const LockoutProblemDetails = ({ problem, lockout, index }: any) => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900">
-          {solvedAt != Infinity
-            ? moment.unix(solvedAt).format("HH:mm DD/MM/YY")
-            : "-"}
+          {solvedAt != Infinity ? (
+            <div className="flex flex-col">
+              <span className="font-medium">
+                {moment.unix(solvedAt).format("h:mm A")}
+              </span>
+              <span className="text-xs text-gray-500">
+                {moment.unix(solvedAt).format("MMM D, YYYY")}
+              </span>
+            </div>
+          ) : (
+            "-"
+          )}
         </div>
       </td>
     </tr>
