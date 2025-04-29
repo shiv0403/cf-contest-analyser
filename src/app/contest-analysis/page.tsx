@@ -46,9 +46,10 @@ const ContestAnalysis = () => {
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/session");
+        console.log({ authResponse: response });
         const data = await response.json();
-        if (data?.user?.username) {
-          setUserHandle(data.user.username);
+        if (data?.user?.userHandle) {
+          setUserHandle(data.user.userHandle);
           setIsLoggedIn(true);
           setHasSearched(true);
           fetchUserContests();

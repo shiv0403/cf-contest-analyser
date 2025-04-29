@@ -4,82 +4,78 @@ import { signupSchema } from "@/schemas/auth";
 import { createUser } from "@/lib/utils/user";
 import { Prisma } from "@prisma/client";
 import { getDbErrors } from "@/lib/helpers/dbErrors";
+import { hash } from "bcryptjs";
+import { prisma } from "@/lib/db";
 
-export async function signup(prevState: object, formData: FormData) {
-  const firstName = formData.get("first-name") as string;
-  const lastName = formData.get("last-name") as string;
-  const email = formData.get("email") as string;
-  const username = formData.get("codeforces-username") as string;
-  const password = formData.get("password") as string;
-  const confirmPassword = formData.get("confirm-password") as string;
-
-  const fieldValues = {
-    firstName,
-    lastName,
-    email,
-    username,
-    password,
-    confirmPassword,
-  };
-
+export async function signup(formData: FormData) {
   try {
-    const validatedFields = signupSchema.safeParse({
-      firstName,
-      lastName,
-      email,
-      username,
-      password,
-      confirmPassword,
-    });
+    const firstName = formData.get("first-name") as string;
+    const lastName = formData.get("last-name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirm-password") as string;
+    const userHandle = formData.get("codeforces-username") as string;
 
-    if (!validatedFields.success) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !userHandle
+    ) {
       return {
-        ...prevState,
-        errors: Object.values(
-          validatedFields.error.flatten().fieldErrors
-        ).flat(),
-        values: fieldValues,
+        errors: ["All fields are required"],
+        success: false,
       };
     }
 
-    const user = await createUser({
-      firstName,
-      lastName,
-      email,
-      username,
-      password,
-    });
-
-    if (!user) {
-      throw new Error("User not created");
+    if (password !== confirmPassword) {
+      return {
+        errors: ["Passwords do not match"],
+        success: false,
+      };
     }
 
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { userHandle }],
+      },
+    });
+
+    if (existingUser) {
+      return {
+        errors: ["Email or Codeforces handle already exists"],
+        success: false,
+      };
+    }
+
+    const hashedPassword = await hash(password, 12);
+
+    const user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        userHandle,
+      },
+    });
+
     return {
-      ...prevState,
-      errors: [],
       success: true,
-      message: "User created successfully",
-      values: {},
       user: {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        username: user.userHandle,
+        userHandle: user.userHandle,
       },
     };
   } catch (error) {
-    let errorMsg = "Something went wrong";
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      errorMsg = getDbErrors(error);
-    } else if (error instanceof Error) {
-      errorMsg = error.message;
-    }
+    console.error("Signup error:", error);
     return {
-      ...prevState,
-      errors: [errorMsg],
+      errors: ["An error occurred during signup"],
       success: false,
-      message: "User not created",
-      values: fieldValues,
     };
   }
 }

@@ -2,18 +2,15 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 const Navbar = () => {
-  const pathName = usePathname();
+  const pathname = usePathname();
+  const { data: session, status } = useSession();
 
-  const getLinkCss = (path: string) => {
-    const isNotActiveCss =
-      "text-gray-800 font-medium hover:text-red-500 cursor-pointer";
-    const isActiveCss =
-      "text-red-500 font-medium border-b-2 border-red-500 cursor-pointer";
-    return pathName.includes(path) ? isActiveCss : isNotActiveCss;
+  const isActive = (path: string) => {
+    return pathname === path;
   };
 
   return (
@@ -34,29 +31,73 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center space-x-6">
           <Link
             href="/contest-analysis"
-            className={getLinkCss("/contest-analysis")}
+            className={`px-3 py-2 text-sm font-medium ${
+              isActive("/contest-analysis")
+                ? "text-red-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            Contests
+            Contest Analysis
           </Link>
-          <Link href="/comparison" className={getLinkCss("/comparison")}>
-            Comparison
+          <Link
+            href="/comparison"
+            className={`px-3 py-2 text-sm font-medium ${
+              isActive("/comparison")
+                ? "text-red-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Compare
           </Link>
-          <Link href="/lockout" className={getLinkCss("/lockout")}>
+          <Link
+            href="/lockout"
+            className={`px-3 py-2 text-sm font-medium ${
+              isActive("/lockout")
+                ? "text-red-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
             Lockout
           </Link>
-          <Link href="/ai-analysis" className={getLinkCss("/ai-analysis")}>
+          <Link
+            href="/ai-analysis"
+            className={`px-3 py-2 text-sm font-medium ${
+              isActive("/ai-analysis")
+                ? "text-red-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
             AI Analysis
           </Link>
         </nav>
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              JD
+          {status === "loading" ? (
+            <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>
+          ) : session?.user ? (
+            <div className="flex items-center space-x-4">
+              <div className="text-sm">
+                <span className="font-medium text-gray-900">
+                  {session.user.name}
+                </span>
+                <span className="ml-1 text-gray-500">
+                  ({session.user.userHandle})
+                </span>
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="rounded-md bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600"
+              >
+                Sign out
+              </button>
             </div>
-            <span className="hidden md:inline text-sm font-medium">
-              John Doe
-            </span>
-          </div>
+          ) : (
+            <Link
+              href="/auth"
+              className="rounded-md bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
     </header>
