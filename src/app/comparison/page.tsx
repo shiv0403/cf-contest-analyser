@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
 import { darkenHexColor, getRatingColors } from "@/lib/helpers/contestHelpers";
 import ContestStrip from "../components/Comparison/ContestStrip";
+import Image from "next/image";
 
 type UserData = {
   id: number;
@@ -539,7 +540,7 @@ const Comparison = () => {
                   }}
                 >
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={currentUser.avatar}
                       alt={currentUser.username}
                       className="w-16 h-16 rounded-full border-2 border-white"
@@ -616,7 +617,7 @@ const Comparison = () => {
                   }}
                 >
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={compareUserData.avatar}
                       alt={compareUserData.username}
                       className="w-16 h-16 rounded-full border-2 border-white"
