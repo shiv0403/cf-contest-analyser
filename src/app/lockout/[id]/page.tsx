@@ -62,7 +62,19 @@ const LockoutPage = () => {
       <div className="container mx-auto px-4 py-8">
         <section className="mb-10">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">{lockout.name}</h2>
+            <h2 className="text-2xl flex items-center font-bold text-gray-800">
+              {lockout.name}{" "}
+              <span
+                className={`px-3 py-1 inline-flex text-sm ml-4 leading-5 font-semibold rounded-full ${
+                  lockout.status === "completed"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-blue-100 text-blue-800"
+                }
+                `}
+              >
+                {lockout.status}
+              </span>
+            </h2>
             <div>
               {/* Live Timer which is decreasing till the lockout end time */}
               <LiveTimer endTime={moment(lockout.endTime).unix() * 1000} />
@@ -90,17 +102,29 @@ const LockoutPage = () => {
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       <div className="flex items-center">
-                        {lockout.host.avatarUrl && (
-                          <Image
-                            src={lockout.host.avatarUrl}
-                            alt="Logo"
-                            width={24}
-                            height={24}
-                            className="w-6 h-6 mr-2 rounded-xl"
-                          />
-                        )}
-
-                        <div>{lockout.host.userHandle + " (You)"}</div>
+                        <div className="flex items-center">
+                          {lockout.host.avatarUrl && (
+                            <Image
+                              src={lockout.host.avatarUrl}
+                              alt="Logo"
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 mr-2 rounded-xl"
+                            />
+                          )}
+                          {lockout.host.userHandle}
+                        </div>
+                        {lockout.winner &&
+                          lockout.winner.userHandle ===
+                            lockout.host.userHandle && (
+                            <Image
+                              src="/winner_final.svg"
+                              alt="winner"
+                              width={32}
+                              height={32}
+                              className="ml-1"
+                            />
+                          )}
                       </div>
                     </th>
                     <th
@@ -108,17 +132,30 @@ const LockoutPage = () => {
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       <div className="flex items-center">
-                        {lockout.invitee.avatarUrl && (
-                          <Image
-                            src={lockout.invitee.avatarUrl}
-                            alt="Logo"
-                            width={24}
-                            height={24}
-                            className="w-6 h-6 mr-2 rounded-xl"
-                          />
-                        )}
+                        <div className="flex items-center">
+                          {lockout.invitee.avatarUrl && (
+                            <Image
+                              src={lockout.invitee.avatarUrl}
+                              alt="Logo"
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 mr-2 rounded-xl"
+                            />
+                          )}
 
-                        <div>{lockout.invitee.userHandle + " (Opponent)"}</div>
+                          <div>{lockout.invitee.userHandle}</div>
+                        </div>
+                        {lockout.winner &&
+                          lockout.winner.userHandle ===
+                            lockout.invitee.userHandle && (
+                            <Image
+                              src="/winner_final.svg"
+                              alt="winner"
+                              width={32}
+                              height={32}
+                              className="ml-1"
+                            />
+                          )}
                       </div>
                     </th>
                     <th

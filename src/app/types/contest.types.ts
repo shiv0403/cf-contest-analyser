@@ -124,6 +124,7 @@ export interface ProblemAnalysisType {
 export interface LockoutResponse extends Lockout {
   invitee: User;
   host: User;
+  winner: User;
 }
 
 export interface LockoutSubmissionResponse extends LockoutSubmission {
