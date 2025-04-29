@@ -4,16 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "worker": "npx tsx --watch src/lib/worker.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "worker:evalWinner": "npx tsx --watch src/lib/workers/lockoutEvaluateWorker.ts"
   },
   "dependencies": {
+    "@bull-board/ui": "^6.9.2",
     "@google/genai": "^0.10.0",
     "@google/generative-ai": "^0.24.0",
     "@prisma/client": "^6.6.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.51.1",
+    "dotenv": "^16.5.0",
     "echarts": "^5.6.0",
     "ioredis": "^5.6.1",
     "lucide-react": "^0.503.0",
@@ -24,6 +28,7 @@
     "prisma": "^6.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tsx": "^4.19.4",
     "yup": "^1.6.1",
     "zod": "^3.24.3"
   },
@@ -34,6 +39,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "tailwindcss": "^4",

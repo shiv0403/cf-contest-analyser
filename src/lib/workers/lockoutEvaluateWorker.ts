@@ -1,9 +1,7 @@
 import { Worker } from "bullmq";
 
-import IORedis from "ioredis";
+import { redisConnection } from "../redis";
 import { evaluateLockoutWinner } from "../utils/lockout";
-
-const connection = new IORedis(process.env.REDIS_URL || "");
 
 const worker = new Worker(
   "lockout-jobs",
@@ -14,7 +12,7 @@ const worker = new Worker(
       await evaluateLockoutWinner(lockoutId); // Your custom function
     }
   },
-  { connection }
+  { connection: redisConnection }
 );
 
 worker.on("completed", (job) => {

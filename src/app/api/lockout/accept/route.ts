@@ -1,4 +1,4 @@
-import { lockoutQueue } from "@/lib/queues/lockoutQueue";
+import { enqueueLockoutWinnerEval } from "@/lib/queues/lockoutQueue";
 import { acceptLockout, getAcceptedLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 
@@ -46,18 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Schedule a worker which will run at the end time of the lockout and evaluate the winner of the contest. Use bullmq for this.
-    const runAt = lockout.endTime;
-
-    await lockoutQueue.add(
-      "evaluateWinner",
-      { lockoutId },
-      {
-        delay: runAt.getTime() - Date.now(),
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-      }
-    );
+    enqueueLockoutWinnerEval(lockout.id);
 
     return new Response(JSON.stringify(lockout), {
       status: 200,
