@@ -19,24 +19,28 @@ export async function GET(request: NextRequest) {
         status: 404,
       });
     }
-    // Lookup for host and invitee submissions for lockout problems
-    const problemIdVsSubmissionHost = await getUserSubmissionsForLockoutProblem(
-      lockout.host.userHandle,
-      lockout
-    );
 
-    const problemIdVsSubmissionInvitee =
-      await getUserSubmissionsForLockoutProblem(
-        lockout.invitee.userHandle,
-        lockout
+    if (lockout.status !== "completed") {
+      // Lookup for host and invitee submissions for lockout problems
+      const problemIdVsSubmissionHost =
+        await getUserSubmissionsForLockoutProblem(
+          lockout.host.userHandle,
+          lockout
+        );
+
+      const problemIdVsSubmissionInvitee =
+        await getUserSubmissionsForLockoutProblem(
+          lockout.invitee.userHandle,
+          lockout
+        );
+
+      // Create lockout submission entries and submission entries
+      await createLockoutSubmissions(
+        lockout,
+        problemIdVsSubmissionHost,
+        problemIdVsSubmissionInvitee
       );
-
-    // Create lockout submission entries and submission entries
-    await createLockoutSubmissions(
-      lockout,
-      problemIdVsSubmissionHost,
-      problemIdVsSubmissionInvitee
-    );
+    }
 
     return new Response(JSON.stringify(lockoutSerializer(lockout)), {
       status: 200,
