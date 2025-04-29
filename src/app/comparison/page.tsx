@@ -6,6 +6,7 @@ import ContestStrip from "../components/Comparison/ContestStrip";
 import Image from "next/image";
 import ComparisonSkeleton from "../components/Comparison/ComparisonSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 type UserData = {
   id: number;
@@ -54,6 +55,7 @@ const Comparison = () => {
   ]);
 
   const session = true; // TODO: Replace with actual session check when implelent auth
+  const router = useRouter();
 
   // Set the selected user to the logged-in user's handle when authenticated
   useEffect(() => {
@@ -401,6 +403,9 @@ const Comparison = () => {
       if (!response.ok) {
         throw new Error("Failed creating lockout contest");
       }
+
+      // Redirect to the new lockout page
+      router.push(`/lockouts`);
     } catch (error) {
       console.log("Error creating lockout contest", error);
     }

@@ -3,17 +3,21 @@ import React, { useEffect, useState } from "react";
 import LockoutDetails from "../components/Lockout/LockoutDetails";
 import { Lockout } from "@prisma/client";
 import LockoutSkeleton from "../components/Lockout/LockoutSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Lockouts = () => {
-  const session = { user: { id: 1 } }; // TODO: Replace this with actual session data
+  const { user, isAuthenticated } = useAuth();
   const [lockouts, setLockouts] = useState<Array<Lockout>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [opponentHandle, setOpponentHandle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const fetchCurrentUserLockouts = async () => {
+    if (!user?.id) return;
+
+    setIsLoading(true);
     try {
-      const response = await fetch(`/api/lockout?userId=${session.user.id}`);
+      const response = await fetch(`/api/lockout?userId=${user.id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch lockouts");
       }
@@ -27,7 +31,7 @@ const Lockouts = () => {
   };
 
   const handleCreateLockout = async () => {
-    if (!opponentHandle.trim()) return;
+    if (!opponentHandle.trim() || !user?.id) return;
 
     setIsCreating(true);
     try {
@@ -37,7 +41,7 @@ const Lockouts = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          hostId: session.user.id,
+          hostId: user.id,
           opponentHandle: opponentHandle.trim(),
         }),
       });
@@ -57,12 +61,10 @@ const Lockouts = () => {
   };
 
   useEffect(() => {
-    fetchCurrentUserLockouts();
-  }, []);
-
-  if (isLoading) {
-    return <LockoutSkeleton />;
-  }
+    if (isAuthenticated) {
+      fetchCurrentUserLockouts();
+    }
+  }, [isAuthenticated]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -91,6 +93,7 @@ const Lockouts = () => {
                 value={opponentHandle}
                 onChange={(e) => setOpponentHandle(e.target.value)}
                 className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                disabled={!isAuthenticated || isLoading}
               />
               <i className="fas fa-user absolute right-3 top-2.5 text-gray-400"></i>
             </div>
@@ -98,7 +101,12 @@ const Lockouts = () => {
           <div className="flex items-end">
             <button
               onClick={handleCreateLockout}
-              disabled={!opponentHandle.trim() || isCreating}
+              disabled={
+                !opponentHandle.trim() ||
+                isCreating ||
+                !isAuthenticated ||
+                isLoading
+              }
               className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium"
             >
               {isCreating ? (
@@ -134,7 +142,9 @@ const Lockouts = () => {
       </div>
 
       {/* Lockout Table */}
-      {lockouts.length > 0 ? (
+      {isLoading ? (
+        <LockoutSkeleton />
+      ) : lockouts.length > 0 ? (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

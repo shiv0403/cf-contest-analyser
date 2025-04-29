@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 type User = {
-  id: string;
+  id: number;
   email: string;
   userHandle: string;
   name: string;
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           setUser({
-            id: session.user.id,
+            id: parseInt(session.user.id),
             email: session.user.email,
             userHandle: session.user.userHandle,
             name: session.user.name,
