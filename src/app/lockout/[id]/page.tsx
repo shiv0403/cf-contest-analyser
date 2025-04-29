@@ -16,37 +16,43 @@ const LockoutPage = () => {
 
   const POLLING_INTERVAL = 5000;
 
-  const fetchLockoutDetails = async () => {
-    try {
-      const submissionResponse = await fetch(
-        `/api/lockout/submission?lockoutId=${lockoutId}`
-      );
-
-      if (!submissionResponse.ok) {
-        throw new Error("Failed fetching users lockout submissions");
-      }
-
-      const response = await fetch(
-        `/api/lockout/accept?lockoutId=${lockoutId}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch lockout details");
-      }
-      const data = await response.json();
-
-      setLockout(data.lockout);
-      setLockoutProblems(data.problems);
-    } catch (error) {
-      console.error("Error fetching lockout details:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchLockoutDetails();
+    let intervalId: NodeJS.Timeout;
+    const fetchLockoutDetails = async () => {
+      try {
+        const submissionResponse = await fetch(
+          `/api/lockout/submission?lockoutId=${lockoutId}`
+        );
 
-    // polling
-    const intervalId = setInterval(fetchLockoutDetails, POLLING_INTERVAL);
+        if (!submissionResponse.ok) {
+          throw new Error("Failed fetching users lockout submissions");
+        }
+
+        const response = await fetch(
+          `/api/lockout/accept?lockoutId=${lockoutId}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch lockout details");
+        }
+        const data = await response.json();
+
+        setLockout(data.lockout);
+        setLockoutProblems(data.problems);
+
+        if (data.lockout.status === "completed" && intervalId) {
+          clearInterval(intervalId);
+        }
+      } catch (error) {
+        console.error("Error fetching lockout details:", error);
+      }
+    };
+
+    // Start polling only if no lockout or it's not completed
+    if (!lockout || lockout.status !== "completed") {
+      fetchLockoutDetails(); // run once on mount
+      intervalId = setInterval(fetchLockoutDetails, POLLING_INTERVAL);
+    }
     return () => clearInterval(intervalId);
   }, [lockoutId]);
 

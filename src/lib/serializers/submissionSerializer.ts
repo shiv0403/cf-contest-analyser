@@ -5,7 +5,7 @@ export const submissionSerializer = (submission: SubmissionWithProblem) => {
   if (!submission) {
     return {};
   }
-  console.log({ sb: submission.problem });
+
   return {
     contestId: submission.contestId,
     problem: submission.problem ? problemSerializer(submission.problem) : {},
