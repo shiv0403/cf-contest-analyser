@@ -95,10 +95,7 @@ model PerformanceMetrics {
 model AiAnalysis {
   id                  Int @id @default(autoincrement())
   userHandle          String
-  insights            Json
-  improvementPlan     Json
-  recommendedProblems Json
-  weakTopics          Json
+  analysis            Json @default("{}")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt @default(now())
 }

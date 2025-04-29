@@ -1,15 +1,40 @@
 import { NextRequest } from "next/server";
-import { AiAnalysisResponse } from "@/app/types/ai-analysis";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "@/lib/db";
-import { PerformanceMetrics, UserSubmission } from "@/app/types/contest.types";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getUserDataForAiAnalysis } from "@/lib/utils/aiAnalysis";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
+
+interface UserProfileData {
+  handle: string;
+  rating?: number;
+  maxRating?: number;
+  rank?: string;
+  contribution?: number;
+  registrationTimeSeconds: number;
+}
+
+interface PerformanceMetricsData {
+  totalProblems: number;
+  problemsSolved: number;
+  successRate: number;
+  avgTimePerProblem: number;
+  activeLastMonth: boolean;
+  monthlyActivity: number;
+  recentProblemsSolved: number;
+  recentTopicsCovered: number;
+}
+
+interface ProblemSolvingPatternsData {
+  preferredTopics: string[];
+  ratingDistribution: Record<string, number>;
+  verdictDistribution: Record<string, number>;
+  preferredLanguages: string[];
+}
 
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { submissions, performanceMetrics } = data.userData;
     const userHandle = data.username;
 
     const currentAIAnalysis = await prisma.aiAnalysis.findFirst({
@@ -19,26 +44,29 @@ export async function POST(request: NextRequest) {
     });
 
     if (!currentAIAnalysis) {
-      const latestAIAnalysis = await getAiAnalysis(
+      const { userProfile, performanceMetrics, problemSolvingPatterns } =
+        await getUserDataForAiAnalysis(userHandle);
+      const analysis = await getAiAnalysis(
+        userProfile,
         performanceMetrics,
-        submissions
+        problemSolvingPatterns
       );
 
       await prisma.aiAnalysis.create({
         data: {
           userHandle: userHandle,
-          insights: latestAIAnalysis.insights || {},
-          improvementPlan: latestAIAnalysis.improvementPlan || {},
-          recommendedProblems: latestAIAnalysis.recommendedProblems || {},
-          weakTopics: latestAIAnalysis.weakTopics || {},
+          analysis: analysis,
         },
       });
     } else if (
       currentAIAnalysis.updatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)
     ) {
-      const latestAIAnalysis = await getAiAnalysis(
+      const { userProfile, performanceMetrics, problemSolvingPatterns } =
+        await getUserDataForAiAnalysis(userHandle);
+      const analysis = await getAiAnalysis(
+        userProfile,
         performanceMetrics,
-        submissions
+        problemSolvingPatterns
       );
 
       await prisma.aiAnalysis.update({
@@ -46,10 +74,7 @@ export async function POST(request: NextRequest) {
           id: currentAIAnalysis.id,
         },
         data: {
-          insights: latestAIAnalysis.insights || {},
-          improvementPlan: latestAIAnalysis.improvementPlan || {},
-          recommendedProblems: latestAIAnalysis.recommendedProblems || {},
-          weakTopics: latestAIAnalysis.weakTopics || {},
+          analysis: analysis,
         },
       });
     }
@@ -60,87 +85,134 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(JSON.stringify(latestAIAnalysis));
+    return new Response(JSON.stringify(latestAIAnalysis?.analysis));
   } catch (error) {
     console.error("Error in AI analysis:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to generate AI analysis", status: 500 })
+      JSON.stringify({ error: "Failed to generate AI analysis" }),
+      { status: 500 }
     );
   }
 }
 
 async function getAiAnalysis(
-  performanceMetrics: PerformanceMetrics,
-  submissions: Array<UserSubmission>
+  userProfile: UserProfileData,
+  performanceMetrics: PerformanceMetricsData,
+  problemSolvingPatterns: ProblemSolvingPatternsData
 ) {
-  const prompt = `Analyze the following Codeforces user data and provide a detailed analysis in JSON format:
-    
-  Performance Metrics:
-  - Rating Change: ${performanceMetrics.ratingChange}
-  - Problems Solved: ${performanceMetrics.problemsSolved}
-  - Total Problems: ${performanceMetrics.totalProblems}
-  - Average Time per Problem: ${performanceMetrics.avgTimePerProblem} minutes
-  - Success Rate: ${performanceMetrics.successRate}%
+  const prompt = `You are an expert competitive programming coach analyzing a Codeforces user's performance. Based on the provided data, generate a comprehensive analysis that will help the user improve their competitive programming skills.
 
-  Submissions Data:
-  ${JSON.stringify(submissions, null, 2)}
+User Profile and Performance Data:
+${JSON.stringify(
+  { userProfile, performanceMetrics, problemSolvingPatterns },
+  null,
+  2
+)}
 
-  Please provide a JSON response with the following structure:
-  {
-    "weakTopics": [
+Please make sure that all links are valid and working. They must be correct at any point of time.
+Practice problems must be from codeforces.com and the name of the problem must be the same as the name in codeforces. The links must be correct at any point of time. Please make sure that the links are not broken.
+Resource links must be valid at any point of time. especially for cp-algorithms.
+Also recommend 8 problems for each weak topic.
+Please provide a detailed analysis in JSON format with the following structure:
+{
+  "strengthAnalysis": {
+    "strongTopics": [
       {
-        "name": "topic name",
+        "topic": string,
         "proficiency": number (0-100),
-        "effort": "low/medium/high",
-        "problems": ["problem link 1", "problem link 2", "problem link 3"]
+        "evidence": string (explanation of why this is a strength)
       }
     ],
-    "recommendedProblems": [
+    "consistentPatterns": [string] (list of positive patterns observed)
+  },
+  "weaknessAnalysis": {
+    "weakTopics": [
       {
-        "topic": "topic name",
-        "problems": [
+        "topic": string,
+        "proficiency": number (0-100),
+        "suggestedApproach": string,
+        "recommendedProblems": [
           {
-            "name": "problem name",
-            "link": "problem link",
-            "difficulty": "Easy/Medium/Hard",
-            "tags": ["tag1", "tag2"]
+            "name": string,
+            "difficulty": string,
+            "link": string,
+            "conceptsCovered": [string]
           }
         ]
       }
     ],
-    "insights": ["insight 1", "insight 2"],
-    "improvementPlan": {
-      "shortTerm": ["goal 1", "goal 2"],
-      "longTerm": ["goal 1", "goal 2"]
+    "improvementAreas": [string] (list of areas needing immediate attention)
+  },
+  "practiceStrategy": {
+    "dailyRoutine": [string] (specific daily practice steps),
+    "weeklyGoals": [string],
+    "topicWisePlan": [
+      {
+        "topic": string,
+        "timeAllocation": string,
+        "resourceLinks": [string],
+        "practiceApproach": string
+      }
+    ]
+  },
+  "contestStrategy": {
+    "preparationTips": [string],
+    "duringContestAdvice": [string],
+    "postContestLearning": [string]
+  },
+  "timeManagement": {
+    "problemSolvingTimeBreakdown": {
+      "reading": string (suggested time),
+      "thinking": string,
+      "coding": string,
+      "testing": string
+    },
+    "practiceSchedule": {
+      "weekday": [string],
+      "weekend": [string]
     }
+  },
+  "nextMilestones": {
+    "shortTerm": [
+      {
+        "goal": string,
+        "timeframe": string,
+        "actionItems": [string]
+      }
+    ],
+    "longTerm": [
+      {
+        "goal": string,
+        "timeframe": string,
+        "prerequisites": [string]
+      }
+    ]
   }
+}
 
-  Focus on:
-  1. Identifying weak topics with accurate proficiency levels
-  2. Recommending relevant Codeforces problems for each weak topic. Problems link should be correct and recommended problems should be of appropriate difficulty level. Suggest a few problems with a little more difficuly level also. Recommend 8 problems for each topic with increasing difficulty level but not much higher than the user's current rating. Diff can be atmost 200 rating points. 3 easy, 3 medium and 2 hard problems.
-  3. Providing specific insights about the user's performance. Insights should be like you are telling the user about their performance and not mentioning the word user instead.
-  4. Creating a detailed improvement plan in a way that you are telling to user. Don't use the words like "the user", "user". Instead use "you"`;
+Analysis Guidelines:
+1. Focus on actionable insights based on the user's current performance
+2. Provide specific problem recommendations within 200-300 rating points of their current level
+3. Consider their success rate and time distribution patterns
+4. Analyze their topic-wise performance to identify knowledge gaps
+5. Suggest realistic time management strategies based on their current activity patterns
+6. Set achievable milestones based on their current rating and progress rate
+
+Please make sure that all links are valid and working. They must be correct at any point of time.
+Format your response as a valid JSON object without any additional text or explanations.`;
 
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: 0.7,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 2048,
-    },
   });
 
   const result = await model.generateContent(prompt);
-
-  const response = await result.response;
+  const response = result.response;
   const text = response.text();
   const cleanText = text
-    .replace(/```json|```/g, "") // remove markdown code block markers
-    .replace(/\\n/g, "") // remove escaped newlines
-    .replace(/\s*\+\s*/g, "") // remove string concatenation symbols and extra spaces
-    .replace(/^'|';?$/g, ""); // remove outer single quotes or trailing semicolon
-  console.log({ cleanText });
-  const analysis = JSON.parse(cleanText) as AiAnalysisResponse;
-  return analysis;
+    .replace(/```json|```/g, "")
+    .replace(/\\n/g, "")
+    .replace(/\s*\+\s*/g, "")
+    .replace(/^'|';?$/g, "");
+
+  return JSON.parse(cleanText);
 }
