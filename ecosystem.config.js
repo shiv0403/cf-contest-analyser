@@ -1,9 +1,9 @@
-const config = {
+module.exports = {
   apps: [
     {
       name: "cf-contest-analyser",
       script: "node_modules/next/dist/bin/next",
-      args: "start -p $PORT",
+      args: "start",
       env: {
         NODE_ENV: "production",
         PORT: process.env.PORT || 3000,
@@ -13,7 +13,7 @@ const config = {
       name: "worker",
       script: "src/lib/worker.ts",
       interpreter: "node",
-      interpreter_args: "--loader tsx",
+      interpreter_args: "--import tsx",
       instances: 1,
       autorestart: true,
       watch: false,
@@ -24,5 +24,3 @@ const config = {
     },
   ],
 };
-
-export default config;
