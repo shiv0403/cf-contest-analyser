@@ -14,11 +14,15 @@ const Toast: React.FC<ToastProps> = ({
   duration = 5000,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsVisible(false);
-      onClose();
+      setIsExiting(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        onClose();
+      }, 300); // Match this with the exit animation duration
     }, duration);
 
     return () => clearTimeout(timer);
@@ -29,35 +33,70 @@ const Toast: React.FC<ToastProps> = ({
   const getBackgroundColor = () => {
     switch (type) {
       case "success":
-        return "bg-green-100 border-green-500 text-green-700";
+        return "bg-green-50 border-green-200 text-green-800";
       case "error":
-        return "bg-red-100 border-red-500 text-red-700";
+        return "bg-red-50 border-red-200 text-red-800";
       case "warning":
-        return "bg-yellow-100 border-yellow-500 text-yellow-700";
+        return "bg-yellow-50 border-yellow-200 text-yellow-800";
       case "info":
-        return "bg-blue-100 border-blue-500 text-blue-700";
+        return "bg-blue-50 border-blue-200 text-blue-800";
       default:
-        return "bg-gray-100 border-gray-500 text-gray-700";
+        return "bg-gray-50 border-gray-200 text-gray-800";
+    }
+  };
+
+  const getIcon = () => {
+    switch (type) {
+      case "success":
+        return "✓";
+      case "error":
+        return "✕";
+      case "warning":
+        return "⚠";
+      case "info":
+        return "ℹ";
+      default:
+        return "";
     }
   };
 
   return (
     <div className="fixed top-4 right-4 z-50">
       <div
-        className={`${getBackgroundColor()} border-l-4 p-4 rounded shadow-lg max-w-md`}
+        className={`${getBackgroundColor()} border rounded-lg shadow-lg max-w-md transform transition-all duration-300 ease-in-out ${
+          isExiting ? "translate-x-full opacity-0" : "translate-x-0 opacity-100"
+        }`}
       >
-        <div className="flex items-center">
+        <div className="flex items-center p-4">
+          <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white/50 mr-3">
+            <span className="text-sm font-bold">{getIcon()}</span>
+          </div>
           <div className="flex-1">
-            <p className="text-sm">{message}</p>
+            <p className="text-sm font-medium">{message}</p>
           </div>
           <button
             onClick={() => {
-              setIsVisible(false);
-              onClose();
+              setIsExiting(true);
+              setTimeout(() => {
+                setIsVisible(false);
+                onClose();
+              }, 300);
             }}
-            className="ml-4 text-lg font-semibold focus:outline-none"
+            className="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200"
           >
-            ×
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </button>
         </div>
       </div>
