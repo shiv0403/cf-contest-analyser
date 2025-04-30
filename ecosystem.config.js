@@ -11,9 +11,8 @@ module.exports = {
     },
     {
       name: "worker",
-      script: "src/lib/worker.ts",
-      interpreter: "node",
-      interpreter_args: "--require ts-node/register",
+      script: "node_modules/tsx/dist/cli.js",
+      args: "src/lib/worker.ts",
       instances: 1,
       autorestart: true,
       watch: false,

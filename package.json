@@ -2,6 +2,7 @@
   "name": "cf-contest-analyser",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "worker": "npx tsx --watch src/lib/worker.ts",

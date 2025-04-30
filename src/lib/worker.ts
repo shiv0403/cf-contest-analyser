@@ -1,12 +1,14 @@
 import { readdirSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 dotenv.config();
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const jobsPath = join(__dirname, "workers");
 const jobFiles = readdirSync(jobsPath);
 
-jobFiles.forEach((file) => {
-  import(join(jobsPath, file));
-});
+for (const file of jobFiles) {
+  await import(join(jobsPath, file));
+}
