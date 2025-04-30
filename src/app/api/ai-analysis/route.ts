@@ -116,6 +116,9 @@ export async function POST(request: NextRequest) {
     const errorResponse = handleError(error);
     return new Response(errorResponse.body, {
       status: errorResponse.statusCode,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
   }
 }

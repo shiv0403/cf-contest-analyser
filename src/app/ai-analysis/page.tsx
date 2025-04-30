@@ -5,18 +5,18 @@ import { AiAnalysisResponse } from "@/app/types/ai-analysis";
 import AiAnalysis from "../components/AiAnalaysis/AiAnalysis";
 import AiAnalysisSkeleton from "../components/AiAnalaysis/AiAnalysisSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/app/contexts/ToastContext";
 
 export default function AiAnalysisPage() {
   const { user, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<AiAnalysisResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     if (!user?.userHandle) return;
 
     setLoading(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/ai-analysis", {
@@ -28,13 +28,21 @@ export default function AiAnalysisPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate AI analysis");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || "Failed to generate AI analysis"
+        );
       }
 
       const { data: analysisData } = await response.json();
       setAnalysis(analysisData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to generate AI analysis",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -51,7 +59,7 @@ export default function AiAnalysisPage() {
           </p>
         </div>
 
-        {!analysis && !loading && !error && (
+        {!analysis && !loading && (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-red-100 mb-6">
               <svg
@@ -126,30 +134,6 @@ export default function AiAnalysisPage() {
             </button>
           </div>
         )}
-
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {loading && <AiAnalysisSkeleton />}
         {analysis && <AiAnalysis analysis={analysis} />}
       </div>

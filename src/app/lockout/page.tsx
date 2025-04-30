@@ -4,9 +4,11 @@ import LockoutDetails from "../components/Lockout/LockoutDetails";
 import { Lockout } from "@prisma/client";
 import LockoutSkeleton from "../components/Lockout/LockoutSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/app/contexts/ToastContext";
 
 const Lockouts = () => {
   const { user, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const [lockouts, setLockouts] = useState<Array<Lockout>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [opponentHandle, setOpponentHandle] = useState("");
@@ -19,12 +21,16 @@ const Lockouts = () => {
     try {
       const response = await fetch(`/api/lockout?userId=${user.id}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch lockouts");
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Failed to fetch lockouts");
       }
       const { data } = await response.json();
       setLockouts(data);
     } catch (error) {
-      console.error("Error fetching lockouts:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to fetch lockouts",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -47,14 +53,18 @@ const Lockouts = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create lockout");
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Failed to create lockout");
       }
 
       // Refresh the lockouts list
       await fetchCurrentUserLockouts();
       setOpponentHandle("");
     } catch (error) {
-      console.error("Error creating lockout:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to create lockout",
+        "error"
+      );
     } finally {
       setIsCreating(false);
     }

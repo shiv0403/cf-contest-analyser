@@ -7,6 +7,7 @@ import Image from "next/image";
 import ComparisonSkeleton from "../components/Comparison/ComparisonSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/contexts/ToastContext";
 
 type UserData = {
   id: number;
@@ -27,6 +28,7 @@ type ContestPerformance = {
 
 const Comparison = () => {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { showToast } = useToast();
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [compareWith, setCompareWith] = useState<string>("");
   const [timeRange, setTimeRange] = useState<string>("all");
@@ -365,7 +367,10 @@ const Comparison = () => {
       );
 
       if (!comparisonResponse.ok) {
-        throw new Error("Failed to fetch comparison data");
+        const errorData = await comparisonResponse.json();
+        throw new Error(
+          errorData.error?.message || "Failed to fetch comparison data"
+        );
       }
 
       const { data: comparisonData } = await comparisonResponse.json();
@@ -381,7 +386,12 @@ const Comparison = () => {
       );
       setTags(comparisonData.topicProficiencyChartData.humanizedTags);
     } catch (error) {
-      console.error("Error fetching comparison data:", error);
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch comparison data",
+        "error"
+      );
     } finally {
       setIsComparing(false);
     }
@@ -405,13 +415,21 @@ const Comparison = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed creating lockout contest");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || "Failed creating lockout contest"
+        );
       }
 
       // Redirect to the new lockout page
       router.push(`/lockouts`);
     } catch (error) {
-      console.log("Error creating lockout contest", error);
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed creating lockout contest",
+        "error"
+      );
     }
   };
 

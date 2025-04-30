@@ -9,9 +9,11 @@ import moment from "moment";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useToast } from "@/app/contexts/ToastContext";
 
 const LockoutPage = () => {
   const { id: lockoutId } = useParams();
+  const { showToast } = useToast();
   const [lockout, setLockout] = useState<LockoutResponse | null>(null);
   const [lockoutProblems, setLockoutProblems] = useState<Array<Problem>>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +29,11 @@ const LockoutPage = () => {
         );
 
         if (!submissionResponse.ok) {
-          throw new Error("Failed fetching users lockout submissions");
+          const errorData = await submissionResponse.json();
+          throw new Error(
+            errorData.error?.message ||
+              "Failed fetching users lockout submissions"
+          );
         }
 
         const response = await fetch(
@@ -35,7 +41,10 @@ const LockoutPage = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch lockout details");
+          const errorData = await response.json();
+          throw new Error(
+            errorData.error?.message || "Failed to fetch lockout details"
+          );
         }
         const data = await response.json();
         const { data: lockoutData } = data;
@@ -48,7 +57,12 @@ const LockoutPage = () => {
           clearInterval(intervalId);
         }
       } catch (error) {
-        console.error("Error fetching lockout details:", error);
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch lockout details",
+          "error"
+        );
         setIsLoading(false);
       }
     };

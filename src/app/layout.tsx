@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import { SessionProvider } from "next-auth/react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,9 +25,11 @@ export default async function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <AuthProvider>
-            <Navbar />
-            <div className="min-h-screen bg-gray-50">{children}</div>
-            <Footer />
+            <ToastProvider>
+              <Navbar />
+              <div className="min-h-screen bg-gray-50">{children}</div>
+              <Footer />
+            </ToastProvider>
           </AuthProvider>
         </SessionProvider>
       </body>

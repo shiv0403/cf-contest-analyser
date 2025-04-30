@@ -8,6 +8,7 @@ import ProblemAnalysisSkeleton from "../components/ProblemAnalysis/ProblemAnalys
 import ContestSelectionSkeleton from "../components/ContestSelection/ContestSelectionSkeleton";
 import HandleInput from "../components/HandleInput/HandleInput";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/app/contexts/ToastContext";
 import {
   PerformanceMetrics,
   ProblemAnalysisType,
@@ -27,6 +28,7 @@ type Contest = {
 
 const ContestAnalysis = () => {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { showToast } = useToast();
   const [selectedContest, setSelectedContest] = useState<UserContest | null>(
     null
   );
@@ -58,12 +60,20 @@ const ContestAnalysis = () => {
     try {
       const response = await fetch(`/api/userContests?userHandle=${handle}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch user contests");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || "Failed to fetch user contests"
+        );
       }
       const { data } = await response.json();
       setUserContests(data || []);
     } catch (error) {
-      console.error("Error fetching user contests:", error);
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch user contests",
+        "error"
+      );
     } finally {
       setIsInitialLoading(false);
     }
@@ -79,13 +89,21 @@ const ContestAnalysis = () => {
         `/api/userSubmissions?contestId=${contestId}&userHandle=${handle}`
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch contest details");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || "Failed to fetch contest details"
+        );
       }
       const { data } = await response.json();
       setProblemAnalysis(data.problemAnalysis);
       setPerformanceMetrics(data.performanceMetrics);
     } catch (error) {
-      console.error("Error fetching contest details:", error);
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch contest details",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
