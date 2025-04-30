@@ -12,6 +12,13 @@ class AppError extends Error {
   }
 }
 
+export class InsufficientParametersError extends AppError {
+  constructor(message: string = "Insufficient parameters") {
+    super(400, message);
+    Object.setPrototypeOf(this, InsufficientParametersError.prototype);
+  }
+}
+
 export class DatabaseError extends AppError {
   constructor(message: string = "Database operation failed") {
     super(500, message);

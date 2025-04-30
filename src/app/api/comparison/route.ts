@@ -6,6 +6,10 @@ import {
 } from "@/app/types/contest.types";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
+import {
+  handleError,
+  InsufficientParametersError,
+} from "@/lib/utils/errorHandler";
 
 type TimeRange = "1month" | "3months" | "6months" | "all";
 type UsersSubmissions = Record<string, Array<UserSubmission>>;
@@ -17,74 +21,63 @@ interface ChartData {
 }
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const compareToUserHandle = searchParams.get("compareToUserHandle");
-  const userHandle = searchParams.get("userHandle");
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const compareToUserHandle = searchParams.get("compareToUserHandle");
+    const userHandle = searchParams.get("userHandle");
 
-  if (!userHandle || !compareToUserHandle) {
-    return new Response("Insufficient Parameters", {
-      status: 400,
+    if (!userHandle || !compareToUserHandle) {
+      throw new InsufficientParametersError();
+    }
+
+    const result = await getUsersInfo(userHandle, compareToUserHandle);
+
+    const userInfo = result[userHandle];
+    const compareToUserInfo = result[compareToUserHandle];
+
+    if (typeof userInfo === "string" || typeof compareToUserInfo === "string") {
+      throw new Error("Invalid data received");
+    }
+
+    const usersSubmissions = await getUsersSubmissions(
+      userHandle,
+      compareToUserHandle
+    );
+
+    const ratingChartData = await getRatingChartData(
+      userHandle,
+      compareToUserHandle
+    );
+
+    const difficultyChartData = await getDifficultyChartData(
+      userHandle,
+      compareToUserHandle,
+      usersSubmissions
+    );
+
+    const topicProficiencyChartData = await getTopicProficiencyChartData(
+      userHandle,
+      compareToUserHandle,
+      usersSubmissions
+    );
+
+    return new Response(
+      JSON.stringify({
+        userInfo: serializeUserInfo(userInfo),
+        compareToUserInfo: serializeUserInfo(compareToUserInfo),
+        ratingChartData: ratingChartData.formattedChartData,
+        contestPerformanceComparison:
+          ratingChartData.contestPerformanceComparison,
+        difficultyChartData,
+        topicProficiencyChartData,
+      })
+    );
+  } catch (error) {
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
     });
   }
-
-  const result = await getUsersInfo(userHandle, compareToUserHandle);
-  if (result.errorMessage) {
-    return new Response(JSON.stringify(result.errorMessage), {
-      status: 500,
-    });
-  }
-
-  const userInfo = result[userHandle];
-  const compareToUserInfo = result[compareToUserHandle];
-
-  if (typeof userInfo === "string" || typeof compareToUserInfo === "string") {
-    throw new Error("Invalid data received");
-  }
-
-  const usersSubmissions = await getUsersSubmissions(
-    userHandle,
-    compareToUserHandle
-  );
-
-  if (usersSubmissions.status === 500) {
-    return new Response(usersSubmissions.errorMessage, {
-      status: usersSubmissions.status,
-    });
-  }
-
-  const ratingChartData = await getRatingChartData(
-    userHandle,
-    compareToUserHandle
-  );
-  if (ratingChartData.status === 500) {
-    return new Response(ratingChartData.errorMessage, {
-      status: ratingChartData.status,
-    });
-  }
-
-  const difficultyChartData = await getDifficultyChartData(
-    userHandle,
-    compareToUserHandle,
-    usersSubmissions
-  );
-
-  const topicProficiencyChartData = await getTopicProficiencyChartData(
-    userHandle,
-    compareToUserHandle,
-    usersSubmissions
-  );
-
-  return new Response(
-    JSON.stringify({
-      userInfo: serializeUserInfo(userInfo),
-      compareToUserInfo: serializeUserInfo(compareToUserInfo),
-      ratingChartData: ratingChartData.formattedChartData,
-      contestPerformanceComparison:
-        ratingChartData.contestPerformanceComparison,
-      difficultyChartData,
-      topicProficiencyChartData,
-    })
-  );
 }
 
 function serializeUserInfo(userInfo: CfUserInfo) {
@@ -105,9 +98,7 @@ async function getUsersInfo(userHandle: string, compareToUserHandle: string) {
   );
   const data = await res.json();
   if (data.status !== "OK") {
-    return {
-      errorMessage: `Error fetching user info data: ${data.comment}`,
-    };
+    throw new Error(`Error fetching user info data: ${data.comment}`);
   }
 
   const users = await prisma.user.findMany({
@@ -119,9 +110,7 @@ async function getUsersInfo(userHandle: string, compareToUserHandle: string) {
   });
 
   if (!users || users.length < 2) {
-    return {
-      errorMessage: `Error fetching user info data: ${data.comment}`,
-    };
+    throw new Error(`Error fetching user info data: ${data.comment}`);
   }
 
   const userHandleVsUserInfo: Record<string, CfUserInfo | string> = {};
@@ -141,15 +130,6 @@ async function getRatingChartData(
 ) {
   const res1 = await getRatingDetailsOfUser(userHandle);
   const res2 = await getRatingDetailsOfUser(compareToUserHandle);
-
-  if (res1.status === 500 || res2.status === 500) {
-    return {
-      errorMessage: `Error fetching ratings data: ${
-        res1.errorMessage || res2.errorMessage
-      }`,
-      status: 500,
-    };
-  }
 
   const userRatingChanges = res1.result;
   const compareToUserRatingChanges = res2.result;
@@ -244,22 +224,9 @@ async function getUsersSubmissions(
   const res1 = await getUserSubmissions(userHandle);
   const res2 = await getUserSubmissions(compareToUserHandle);
 
-  if (res1.status === 500 || res2.status === 500) {
-    return {
-      errorMessage: `Error fetching submissions data: ${
-        res1.errorMessage || res2.errorMessage
-      }`,
-      status: 500,
-      [userHandle]: [],
-      [compareToUserHandle]: [],
-    };
-  }
-
   return {
     [userHandle]: res1.result,
     [compareToUserHandle]: res2.result,
-    status: 200,
-    errorMessage: "",
   };
 }
 
@@ -385,10 +352,7 @@ async function getUserSubmissions(userHandle: string) {
   );
   const data = await res.json();
   if (data.status !== "OK") {
-    return {
-      errorMessage: `Error fetching user submissions data: ${data.comment}`,
-      status: 500,
-    };
+    throw new Error(`Error fetching user submissions data: ${data.comment}`);
   }
   return data;
 }
@@ -399,10 +363,7 @@ async function getRatingDetailsOfUser(userHandle: string) {
   );
   const data = await res.json();
   if (data.status !== "OK") {
-    return {
-      errorMessage: `Error fetching rating chart data: ${data.comment}`,
-      status: 500,
-    };
+    throw new Error(`Error fetching rating chart data: ${data.comment}`);
   }
   return data;
 }
