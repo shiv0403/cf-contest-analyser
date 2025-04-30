@@ -6,9 +6,13 @@
     "dev": "next dev",
     "worker": "npx tsx --watch src/lib/worker.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "lint": "next lint",
-    "worker:evalWinner": "npx tsx --watch src/lib/workers/lockoutEvaluateWorker.ts"
+    "worker:evalWinner": "npx tsx --watch src/lib/workers/lockoutEvaluateWorker.ts",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js",
+    "pm2:delete": "pm2 delete ecosystem.config.js"
   },
   "dependencies": {
     "@bull-board/ui": "^6.9.2",
@@ -27,6 +31,7 @@
     "next": "15.3.0",
     "next-auth": "^5.0.0-beta.27",
     "openai": "^4.96.0",
+    "pm2": "^5.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tsx": "^4.19.4",
