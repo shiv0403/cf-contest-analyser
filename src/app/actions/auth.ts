@@ -68,9 +68,12 @@ export async function signup(formData: FormData) {
       },
     };
   } catch (error) {
-    console.error("Signup error:", error);
     return {
-      errors: ["An error occurred during signup"],
+      errors: [
+        error instanceof Error
+          ? error.message
+          : "An error occurred during signup",
+      ],
       success: false,
     };
   }

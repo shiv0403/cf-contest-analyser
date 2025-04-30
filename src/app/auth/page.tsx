@@ -35,8 +35,9 @@ export default function LoginPage() {
         router.push("/contest-analysis");
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError("An error occurred during login");
+      setError(
+        err instanceof Error ? err.message : "An error occurred during login"
+      );
     } finally {
       setIsLoading(false);
     }

@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import moment from "moment";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/app/contexts/ToastContext";
 
 const LockoutDetails = ({ lockout, index }: any) => {
   const { user } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleJoinLockout = async () => {
     try {
@@ -22,18 +24,26 @@ const LockoutDetails = ({ lockout, index }: any) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to Join the lockout contest");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || "Failed to join the lockout contest"
+        );
       }
 
       router.push(`/lockout/${lockout.id}`);
     } catch (error) {
-      console.error("Error Joining lockout contest:", error);
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to join the lockout contest",
+        "error"
+      );
     }
   };
 
   const handleNavigate = () => {
     if (lockout.status === "pending") {
-      alert("You cannot join a pending lockout");
+      showToast("You cannot join a pending lockout", "warning");
       return;
     }
     router.push(`/lockout/${lockout.id}`);

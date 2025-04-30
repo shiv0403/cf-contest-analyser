@@ -2,7 +2,6 @@ import React from "react";
 import { AiAnalysisResponse } from "@/app/types/ai-analysis";
 
 const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
-  console.log({ analysis });
   return (
     <div className=" mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -187,7 +187,6 @@ export const handleError = (error: unknown) => {
   }
 
   // Handle unknown errors
-  console.error("Unhandled error:", error);
   return {
     statusCode: 500,
     body: JSON.stringify({
