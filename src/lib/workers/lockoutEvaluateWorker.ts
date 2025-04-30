@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 
-import { evaluateLockoutWinner } from "../utils/lockout";
+import { evaluateLockoutWinner } from "@/lib/utils/lockout";
 
 const redisURL = new URL(process.env.REDIS_URL || "");
 

@@ -10,10 +10,10 @@
     "start": "next start -p $PORT",
     "lint": "next lint",
     "worker:evalWinner": "npx tsx --watch src/lib/workers/lockoutEvaluateWorker.ts",
-    "pm2:start": "pm2 start ecosystem.config.js",
-    "pm2:stop": "pm2 stop ecosystem.config.js",
-    "pm2:restart": "pm2 restart ecosystem.config.js",
-    "pm2:delete": "pm2 delete ecosystem.config.js"
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs",
+    "pm2:delete": "pm2 delete ecosystem.config.cjs"
   },
   "dependencies": {
     "@bull-board/ui": "^6.9.2",
@@ -36,6 +36,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.4",
     "yup": "^1.6.1",
     "zod": "^3.24.3"
