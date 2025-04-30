@@ -1,7 +1,8 @@
 import { Worker } from "bullmq";
 
-import { redisConnection } from "../redis";
 import { evaluateLockoutWinner } from "../utils/lockout";
+
+const redisURL = new URL(process.env.REDIS_URL || "");
 
 const worker = new Worker(
   "lockout-jobs",
@@ -12,7 +13,15 @@ const worker = new Worker(
       await evaluateLockoutWinner(lockoutId); // Your custom function
     }
   },
-  { connection: redisConnection }
+  {
+    connection: {
+      family: 0,
+      host: redisURL.hostname,
+      port: parseInt(redisURL.port),
+      username: redisURL.username,
+      password: redisURL.password,
+    },
+  }
 );
 
 worker.on("completed", (job) => {

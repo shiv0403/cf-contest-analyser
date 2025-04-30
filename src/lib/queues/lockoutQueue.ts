@@ -1,10 +1,17 @@
 import { Queue } from "bullmq";
-import { redisConnection } from "../redis";
 import { getLockout } from "../utils/lockout";
 import { defaultQueueConfig } from "./defaultQueueConfig";
 
+const redisURL = new URL(process.env.REDIS_URL || "");
+
 const lockoutQueue = new Queue("lockout-jobs", {
-  connection: redisConnection,
+  connection: {
+    family: 0,
+    host: redisURL.hostname,
+    port: parseInt(redisURL.port),
+    username: redisURL.username,
+    password: redisURL.password,
+  },
   defaultJobOptions: defaultQueueConfig,
 });
 
@@ -21,7 +28,7 @@ export const enqueueLockoutWinnerEval = async (lockoutId: number) => {
     queueName,
     { lockoutId },
     {
-      delay: runAt.getTime() - Date.now(),
+      // delay: runAt.getTime() - Date.now(),
       attempts: 3,
       removeOnComplete: true,
       removeOnFail: false,

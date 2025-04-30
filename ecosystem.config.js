@@ -13,7 +13,7 @@ module.exports = {
       name: "worker",
       script: "src/lib/worker.ts",
       interpreter: "node",
-      interpreter_args: "--import tsx",
+      interpreter_args: "--require ts-node/register",
       instances: 1,
       autorestart: true,
       watch: false,
