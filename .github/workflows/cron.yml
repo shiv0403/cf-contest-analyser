@@ -9,7 +9,15 @@ jobs:
   cron:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Secrets
+        run: |
+          echo "APP_URL: ${{ secrets.APP_URL }}"
+          echo "CRON_SECRET: ${{ secrets.CRON_SECRET }}"
+      
       - name: Run Cron Job
         run: |
           curl -X POST "${{ secrets.APP_URL }}/api/cron" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" 
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
