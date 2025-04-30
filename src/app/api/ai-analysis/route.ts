@@ -2,6 +2,12 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getUserDataForAiAnalysis } from "@/lib/utils/aiAnalysis";
+import {
+  handleError,
+  InternalServerError,
+  ValidationError,
+} from "@/lib/utils/errorHandler";
+import { getToken } from "next-auth/jwt";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
@@ -34,8 +40,24 @@ interface ProblemSolvingPatternsData {
 
 export async function POST(request: NextRequest) {
   try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
     const data = await request.json();
     const userHandle = data.username;
+
+    if (!userHandle) {
+      throw new ValidationError("User handle is required");
+    }
+
+    // Verify that the authenticated user is requesting their own data
+    if (token?.userHandle !== userHandle) {
+      throw new ValidationError(
+        "You can only request analysis for your own handle"
+      );
+    }
 
     const currentAIAnalysis = await prisma.aiAnalysis.findFirst({
       where: {
@@ -59,7 +81,8 @@ export async function POST(request: NextRequest) {
         },
       });
     } else if (
-      currentAIAnalysis.updatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)
+      // currentAIAnalysis.updatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)
+      true
     ) {
       const { userProfile, performanceMetrics, problemSolvingPatterns } =
         await getUserDataForAiAnalysis(userHandle);
@@ -87,11 +110,10 @@ export async function POST(request: NextRequest) {
 
     return new Response(JSON.stringify(latestAIAnalysis?.analysis));
   } catch (error) {
-    console.error("Error in AI analysis:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to generate AI analysis" }),
-      { status: 500 }
-    );
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
+    });
   }
 }
 
@@ -201,18 +223,22 @@ Analysis Guidelines:
 Please make sure that all links are valid and working. They must be correct at any point of time.
 Format your response as a valid JSON object without any additional text or explanations.`;
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-  });
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+    });
 
-  const result = await model.generateContent(prompt);
-  const response = result.response;
-  const text = response.text();
-  const cleanText = text
-    .replace(/```json|```/g, "")
-    .replace(/\\n/g, "")
-    .replace(/\s*\+\s*/g, "")
-    .replace(/^'|';?$/g, "");
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+    const cleanText = text
+      .replace(/```json|```/g, "")
+      .replace(/\\n/g, "")
+      .replace(/\s*\+\s*/g, "")
+      .replace(/^'|';?$/g, "");
 
-  return JSON.parse(cleanText);
+    return JSON.parse(cleanText);
+  } catch (error) {
+    throw new InternalServerError(`Failed to generate AI analysis: ${error}`);
+  }
 }

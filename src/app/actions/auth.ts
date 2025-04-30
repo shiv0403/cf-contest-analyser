@@ -1,9 +1,5 @@
 "use server";
 
-import { signupSchema } from "@/schemas/auth";
-import { createUser } from "@/lib/utils/user";
-import { Prisma } from "@prisma/client";
-import { getDbErrors } from "@/lib/helpers/dbErrors";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/db";
 
