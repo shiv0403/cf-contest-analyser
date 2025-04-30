@@ -1,5 +1,10 @@
 import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
 import { getUserSubmissionsForLockoutProblem } from "@/lib/utils/codeforces";
+import {
+  handleError,
+  InsufficientParametersError,
+  NotFoundError,
+} from "@/lib/utils/errorHandler";
 import { createLockoutSubmissions, getLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 
@@ -8,16 +13,12 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const lockoutId = parseInt(searchParams.get("lockoutId") ?? "");
     if (!lockoutId) {
-      return new Response("Insufficient Parameters", {
-        status: 400,
-      });
+      throw new InsufficientParametersError();
     }
 
     const lockout = await getLockout(lockoutId);
     if (!lockout) {
-      return new Response("Lockout not found", {
-        status: 404,
-      });
+      throw new NotFoundError();
     }
 
     if (lockout.status !== "completed") {
@@ -47,14 +48,9 @@ export async function GET(request: NextRequest) {
       statusText: "OK",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error in lockout route:", error.message);
-    } else {
-      console.log(error);
-    }
-    return new Response("Internal Server Error", {
-      status: 500,
-      statusText: "Internal Server Error",
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
     });
   }
 }

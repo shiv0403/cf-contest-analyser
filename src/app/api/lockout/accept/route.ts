@@ -1,5 +1,9 @@
 import { enqueueLockoutWinnerEval } from "@/lib/queues/lockoutQueue";
 import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
+import {
+  handleError,
+  InsufficientParametersError,
+} from "@/lib/utils/errorHandler";
 import { acceptLockout, getAcceptedLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 
@@ -8,9 +12,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const lockoutId = parseInt(searchParams.get("lockoutId") ?? "");
     if (!lockoutId) {
-      return new Response("Insufficient Parameters", {
-        status: 400,
-      });
+      throw new InsufficientParametersError();
     }
     const { lockout, problems } = await getAcceptedLockout(lockoutId);
 
@@ -22,14 +24,9 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error in lockout route:", error.message);
-    } else {
-      console.log(error);
-    }
-    return new Response("Internal Server Error", {
-      status: 500,
-      statusText: "Internal Server Error",
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
     });
   }
 }
@@ -39,33 +36,26 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const { lockoutId } = data;
     if (!lockoutId) {
-      return new Response("Insufficient Parameters", {
-        status: 400,
-      });
+      throw new InsufficientParametersError();
     }
 
     const lockout = await acceptLockout(lockoutId);
 
     if (!lockout.endTime) {
-      return new Response("Missing lockout end time", { status: 400 });
+      throw new Error("Missing lockout end time");
     }
 
     // Schedule a worker which will run at the end time of the lockout and evaluate the winner of the contest. Use bullmq for this.
-    enqueueLockoutWinnerEval(lockout.id);
+    await enqueueLockoutWinnerEval(lockout.id);
 
     return new Response(JSON.stringify(lockoutSerializer(lockout)), {
       status: 200,
       statusText: "OK",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error in lockout route:", error.message);
-    } else {
-      console.log(error);
-    }
-    return new Response("Internal Server Error", {
-      status: 500,
-      statusText: "Internal Server Error",
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
     });
   }
 }

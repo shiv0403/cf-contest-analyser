@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "@/lib/db";
 import { getUserFullName } from "./user";
 import { getUserRating } from "./codeforces";
-import { getProblemsFromContestIdAndIndex } from "./problem";
+import { getProblemFromContestIdAndIndex } from "./problem";
 import { UserSubmission } from "@/app/types/contest.types";
 import { LockoutWithUsers } from "@/app/types/lockout";
 
@@ -27,8 +27,7 @@ export const getLockout = async (lockoutId: number) => {
     }
     return lockout;
   } catch (error) {
-    console.error("Error fetching lockout:", error);
-    throw new Error("Failed to fetch lockout");
+    throw new Error(`Failed to fetch lockout: ${error}`);
   }
 };
 
@@ -47,8 +46,7 @@ export const getUserLockouts = async (userId: number) => {
 
     return lockouts;
   } catch (error) {
-    console.error("Error fetching user lockouts:", error);
-    throw new Error("Failed to fetch user lockouts");
+    throw new Error(`Failed to fetch user lockouts: ${error}`);
   }
 };
 
@@ -141,8 +139,7 @@ export const createLockoutSubmissions = async (
 
     return true;
   } catch (error) {
-    console.error("Error creating lockout submissions:", error);
-    throw new Error("Failed to create lockout submissions");
+    throw new Error(`Failed to create lockout submissions: ${error}`);
   }
 };
 
@@ -183,8 +180,7 @@ export const createPendingLockout = async (
 
     return pendingLockout;
   } catch (error) {
-    console.error("Error creating lockout:", error);
-    throw new Error("Failed to create lockout");
+    throw new Error(`Failed to create lockout: ${error}`);
   }
 };
 
@@ -227,8 +223,7 @@ export const getAcceptedLockout = async (lockoutId: number) => {
     }));
     return { lockout, problems };
   } catch (error) {
-    console.error("Error fetching lockout:", error);
-    throw new Error("Failed to fetch lockout");
+    throw new Error(`Failed to fetch lockout: ${error}`);
   }
 };
 
@@ -256,8 +251,7 @@ export const acceptLockout = async (lockoutId: number) => {
 
     return lockout;
   } catch (error) {
-    console.error("Error accepting lockout:", error);
-    throw new Error("Failed to accept lockout");
+    throw new Error(`Failed to accept lockout: ${error}`);
   }
 };
 
@@ -272,8 +266,6 @@ async function getLockoutData(lockoutId: number) {
 
   const suggestion = await suggestLockoutProblems(hostRating, inviteeRating);
   const { problems, duration } = suggestion;
-
-  console.log({ problems, duration });
 
   return {
     durationSeconds: duration,
@@ -331,7 +323,7 @@ async function suggestLockoutProblems(
     const problems: Array<Problem> = await Promise.all(
       lockoutData.problems.map(
         async (problem: { contestId: number; index: string }) => {
-          const p = await getProblemsFromContestIdAndIndex(
+          const p = await getProblemFromContestIdAndIndex(
             problem.contestId,
             problem.index
           );
@@ -341,8 +333,7 @@ async function suggestLockoutProblems(
     );
     return { problems, duration: lockoutData.durationSeconds };
   } catch (e) {
-    console.error("Failed to parse AI response:", e);
-    throw new Error("AI response was not valid JSON");
+    throw new Error(`Failed to suggest lockout problems: ${e}`);
   }
 }
 
@@ -428,7 +419,6 @@ export const evaluateLockoutWinner = async (lockoutId: number) => {
       return false;
     }
   } catch (error) {
-    console.log("Failed to evaluate lockout winner", error);
-    throw new Error(`Failed to evaluate lockout ${lockoutId} winner`);
+    throw new Error(`Failed to evaluate lockout ${lockoutId} winner: ${error}`);
   }
 };

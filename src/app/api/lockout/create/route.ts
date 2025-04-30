@@ -1,4 +1,9 @@
 import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
+import {
+  handleError,
+  InsufficientParametersError,
+  NotFoundError,
+} from "@/lib/utils/errorHandler";
 import { createPendingLockout } from "@/lib/utils/lockout";
 import { getUserByUserHandle } from "@/lib/utils/user";
 import { NextRequest } from "next/server";
@@ -9,17 +14,13 @@ export async function POST(request: NextRequest) {
     const { hostId, opponentHandle } = data;
 
     if (!hostId || !opponentHandle) {
-      return new Response("Insufficient Parameters", {
-        status: 400,
-      });
+      throw new InsufficientParametersError();
     }
 
     const opponent = await getUserByUserHandle(opponentHandle);
 
     if (!opponent) {
-      return new Response("Opponent not found", {
-        status: 400,
-      });
+      throw new NotFoundError("Opponent not found");
     }
 
     // Create Lockout request
@@ -30,14 +31,9 @@ export async function POST(request: NextRequest) {
       statusText: "OK",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error in lockout route:", error.message);
-    } else {
-      console.log(error);
-    }
-    return new Response("Internal Server Error", {
-      status: 500,
-      statusText: "Internal Server Error",
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
     });
   }
 }

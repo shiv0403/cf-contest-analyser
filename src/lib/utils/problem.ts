@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 
-export const getProblemsFromContestIdAndIndex = async (
+export const getProblemFromContestIdAndIndex = async (
   contestId: number,
   index: string
 ) => {
