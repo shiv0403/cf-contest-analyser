@@ -4,7 +4,7 @@ buildCommand = "npm install && npm run build"
 
 [deploy]
 startCommand = "npx pm2-runtime start ecosystem.config.cjs"
-healthcheckPath = "/"
+healthcheckPath = "/contest-analysis"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10 
+restartPolicyMaxRetries = 10
