@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { CfProblem, Contest } from "@/app/types/contest.types";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 // Contest sync cron
 export async function POST(request: Request) {
@@ -63,11 +64,13 @@ export async function POST(request: Request) {
     });
   }
 
-  return new Response(
-    `Contests sync cron for Contest and Problems ran at ${Date.now()} successfully`,
+  return sendSuccessResponse(
     {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    }
+      contestsSynced: contestsData.length,
+      problemsSynced: problems.length,
+    },
+    "Contests and problems synced successfully",
+    undefined,
+    201
   );
 }

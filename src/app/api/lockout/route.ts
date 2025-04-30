@@ -3,6 +3,7 @@ import { getUserLockouts } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 import { handleError, ValidationError } from "@/lib/utils/errorHandler";
 import { getToken } from "next-auth/jwt";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,19 +27,14 @@ export async function GET(request: NextRequest) {
     const lockouts = await getUserLockouts(userId);
     const serializedLockouts = lockouts.map((lc) => lockoutSerializer(lc));
 
-    return new Response(JSON.stringify(serializedLockouts), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return sendSuccessResponse(
+      serializedLockouts,
+      "Lockout data retrieved successfully"
+    );
   } catch (error) {
     const errorResponse = handleError(error);
     return new Response(errorResponse.body, {
       status: errorResponse.statusCode,
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
   }
 }

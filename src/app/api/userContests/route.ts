@@ -6,6 +6,7 @@ import {
   handleError,
   InsufficientParametersError,
 } from "@/lib/utils/errorHandler";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 // Define the type for UserContest with included contest
 type UserContestWithContest = Prisma.UserContestGetPayload<{
@@ -88,7 +89,10 @@ export async function GET(request: NextRequest) {
       }),
     }));
 
-    return new Response(JSON.stringify(userContestData));
+    return sendSuccessResponse(
+      userContestData,
+      "User contests retrieved successfully"
+    );
   } catch (error) {
     const errorResponse = handleError(error);
     return new Response(errorResponse.body, {

@@ -60,7 +60,7 @@ const ContestAnalysis = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch user contests");
       }
-      const data = await response.json();
+      const { data } = await response.json();
       setUserContests(data || []);
     } catch (error) {
       console.error("Error fetching user contests:", error);
@@ -81,7 +81,7 @@ const ContestAnalysis = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch contest details");
       }
-      const data = await response.json();
+      const { data } = await response.json();
       setProblemAnalysis(data.problemAnalysis);
       setPerformanceMetrics(data.performanceMetrics);
     } catch (error) {

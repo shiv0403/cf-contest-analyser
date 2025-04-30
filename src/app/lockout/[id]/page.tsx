@@ -38,12 +38,13 @@ const LockoutPage = () => {
           throw new Error("Failed to fetch lockout details");
         }
         const data = await response.json();
+        const { data: lockoutData } = data;
 
-        setLockout(data.lockout);
-        setLockoutProblems(data.problems);
+        setLockout(lockoutData.lockout);
+        setLockoutProblems(lockoutData.problems);
         setIsLoading(false);
 
-        if (data.lockout.status === "completed" && intervalId) {
+        if (lockoutData.lockout.status === "completed" && intervalId) {
           clearInterval(intervalId);
         }
       } catch (error) {

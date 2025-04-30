@@ -31,7 +31,7 @@ export default function AiAnalysisPage() {
         throw new Error("Failed to generate AI analysis");
       }
 
-      const analysisData = await response.json();
+      const { data: analysisData } = await response.json();
       setAnalysis(analysisData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

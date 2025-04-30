@@ -8,6 +8,7 @@ import {
   ValidationError,
 } from "@/lib/utils/errorHandler";
 import { getToken } from "next-auth/jwt";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
@@ -81,8 +82,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } else if (
-      // currentAIAnalysis.updatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)
-      true
+      currentAIAnalysis.updatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)
     ) {
       const { userProfile, performanceMetrics, problemSolvingPatterns } =
         await getUserDataForAiAnalysis(userHandle);
@@ -108,7 +108,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(JSON.stringify(latestAIAnalysis?.analysis));
+    return sendSuccessResponse(
+      latestAIAnalysis?.analysis,
+      "AI analysis generated successfully"
+    );
   } catch (error) {
     const errorResponse = handleError(error);
     return new Response(errorResponse.body, {

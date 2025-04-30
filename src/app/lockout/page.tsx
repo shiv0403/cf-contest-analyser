@@ -21,7 +21,7 @@ const Lockouts = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch lockouts");
       }
-      const data = await response.json();
+      const { data } = await response.json();
       setLockouts(data);
     } catch (error) {
       console.error("Error fetching lockouts:", error);

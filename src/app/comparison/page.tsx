@@ -364,7 +364,11 @@ const Comparison = () => {
         `/api/comparison?userHandle=${selectedUser}&compareToUserHandle=${compareWith}`
       );
 
-      const comparisonData = await comparisonResponse.json();
+      if (!comparisonResponse.ok) {
+        throw new Error("Failed to fetch comparison data");
+      }
+
+      const { data: comparisonData } = await comparisonResponse.json();
       setCurrentUser(comparisonData.userInfo);
       setCompareUserData(comparisonData.compareToUserInfo);
       setRatingChartData(comparisonData.ratingChartData);

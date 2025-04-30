@@ -9,6 +9,7 @@ import {
   InsufficientParametersError,
 } from "@/lib/utils/errorHandler";
 import { NextRequest } from "next/server";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 export async function GET(request: NextRequest) {
   try {
@@ -136,12 +137,13 @@ export async function GET(request: NextRequest) {
       contestProblems
     );
 
-    return new Response(
-      JSON.stringify({
+    return sendSuccessResponse(
+      {
         performanceMetrics: serializedPerformanceMetrics,
         problemAnalysis,
         contestProblems,
-      })
+      },
+      "User submissions retrieved successfully"
     );
   } catch (error) {
     const errorResponse = handleError(error);

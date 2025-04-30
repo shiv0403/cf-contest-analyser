@@ -7,6 +7,7 @@ import {
 } from "@/lib/utils/errorHandler";
 import { createLockoutSubmissions, getLockout } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,10 +44,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return new Response(JSON.stringify(lockoutSerializer(lockout)), {
-      status: 200,
-      statusText: "OK",
-    });
+    return sendSuccessResponse(
+      lockoutSerializer(lockout),
+      "Lockout submissions retrieved successfully"
+    );
   } catch (error) {
     const errorResponse = handleError(error);
     return new Response(errorResponse.body, {

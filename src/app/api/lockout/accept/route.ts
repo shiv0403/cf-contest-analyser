@@ -5,6 +5,7 @@ import {
   InsufficientParametersError,
 } from "@/lib/utils/errorHandler";
 import { acceptLockout, getAcceptedLockout } from "@/lib/utils/lockout";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -16,12 +17,9 @@ export async function GET(request: NextRequest) {
     }
     const { lockout, problems } = await getAcceptedLockout(lockoutId);
 
-    return new Response(
-      JSON.stringify({ lockout: lockoutSerializer(lockout), problems }),
-      {
-        status: 200,
-        statusText: "OK",
-      }
+    return sendSuccessResponse(
+      { lockout: lockoutSerializer(lockout), problems },
+      "Lockout accepted successfully"
     );
   } catch (error) {
     const errorResponse = handleError(error);
@@ -48,10 +46,10 @@ export async function POST(request: NextRequest) {
     // Schedule a worker which will run at the end time of the lockout and evaluate the winner of the contest. Use bullmq for this.
     await enqueueLockoutWinnerEval(lockout.id);
 
-    return new Response(JSON.stringify(lockoutSerializer(lockout)), {
-      status: 200,
-      statusText: "OK",
-    });
+    return sendSuccessResponse(
+      lockoutSerializer(lockout),
+      "Lockout accepted successfully"
+    );
   } catch (error) {
     const errorResponse = handleError(error);
     return new Response(errorResponse.body, {

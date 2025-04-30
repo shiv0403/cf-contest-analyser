@@ -10,6 +10,7 @@ import {
   handleError,
   InsufficientParametersError,
 } from "@/lib/utils/errorHandler";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 
 type TimeRange = "1month" | "3months" | "6months" | "all";
 type UsersSubmissions = Record<string, Array<UserSubmission>>;
@@ -61,8 +62,8 @@ export async function GET(request: NextRequest) {
       usersSubmissions
     );
 
-    return new Response(
-      JSON.stringify({
+    return sendSuccessResponse(
+      {
         userInfo: serializeUserInfo(userInfo),
         compareToUserInfo: serializeUserInfo(compareToUserInfo),
         ratingChartData: ratingChartData.formattedChartData,
@@ -70,7 +71,8 @@ export async function GET(request: NextRequest) {
           ratingChartData.contestPerformanceComparison,
         difficultyChartData,
         topicProficiencyChartData,
-      })
+      },
+      "Comparison data retrieved successfully"
     );
   } catch (error) {
     const errorResponse = handleError(error);
