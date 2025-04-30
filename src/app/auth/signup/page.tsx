@@ -26,7 +26,7 @@ export default function SignupPage() {
         setError(result.errors || ["An error occurred during signup"]);
       }
     } catch (err) {
-      setError(["An error occurred during signup"]);
+      setError([`An error occurred during signup: ${err}`]);
     } finally {
       setIsLoading(false);
     }
