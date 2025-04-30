@@ -1,7 +1,9 @@
 import IORedis from "ioredis";
 
 const getRedisConnection = () => {
-  return new IORedis(process.env.REDIS_URL || "", {
+  let redisUrl = process.env.REDIS_URL || "";
+  redisUrl += "?family=0";
+  return new IORedis(redisUrl, {
     maxRetriesPerRequest: null,
   });
 };
