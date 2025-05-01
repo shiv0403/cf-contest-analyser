@@ -1,17 +1,10 @@
 import { Queue } from "bullmq";
 import { getLockout } from "../utils/lockout";
 import { defaultQueueConfig } from "./defaultQueueConfig";
-
-const redisURL = new URL(process.env.REDIS_URL || "");
+import { redisConnection } from "../redis";
 
 const lockoutQueue = new Queue("lockout-jobs", {
-  connection: {
-    family: 0,
-    host: redisURL.hostname,
-    port: parseInt(redisURL.port),
-    username: redisURL.username,
-    password: redisURL.password,
-  },
+  connection: redisConnection,
   defaultJobOptions: defaultQueueConfig,
 });
 

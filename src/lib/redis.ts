@@ -1,9 +1,15 @@
 import IORedis from "ioredis";
 
 const getRedisConnection = () => {
-  let redisUrl = process.env.REDIS_URL || "";
-  redisUrl += "?family=0";
-  return new IORedis(redisUrl, {
+  if (process.env.NODE_ENV === "production") {
+    // Production (Upstash)
+    return new IORedis(process.env.UPSTASH_REDIS_REST_URL || "", {
+      maxRetriesPerRequest: null,
+    });
+  }
+
+  // Development (Local Redis)
+  return new IORedis(process.env.REDIS_URL || "redis://localhost:6379", {
     maxRetriesPerRequest: null,
   });
 };
