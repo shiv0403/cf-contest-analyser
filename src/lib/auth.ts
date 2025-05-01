@@ -51,7 +51,6 @@ export const config = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        console.log({ jwt: "true", user, token });
         token.id = user.id;
         token.userHandle = user.userHandle;
       }
@@ -59,7 +58,6 @@ export const config = {
     },
     async session({ session, token }) {
       if (token) {
-        console.log({ session: "true", token });
         session.user.id = token.id as string;
         session.user.userHandle = token.userHandle as string;
       }

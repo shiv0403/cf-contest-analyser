@@ -4,10 +4,27 @@ import { getToken } from "next-auth/jwt";
 import { handleError, AuthorizationError } from "@/lib/utils/errorHandler";
 
 export async function middleware(req: NextRequest) {
+  if (process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL) {
+    const requestUrl = new URL(req.url);
+    const baseUrl = new URL(process.env.NEXTAUTH_URL);
+    // Replace host and protocol
+    requestUrl.hostname = baseUrl.hostname;
+    requestUrl.protocol = baseUrl.protocol;
+
+    // You must override req.url manually (not directly modifiable)
+    req = new NextRequest(requestUrl, req); // construct new req with updated URL
+  }
+
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === "production",
+  });
+
+  console.log({
+    middleware: true,
+    token,
+    url: req.url,
+    secret: process.env.NEXTAUTH_SECRET,
   });
 
   const isLoggedIn = !!token;
