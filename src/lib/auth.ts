@@ -51,6 +51,7 @@ export const config = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        console.log({ jwt: "true", user, token });
         token.id = user.id;
         token.userHandle = user.userHandle;
       }
@@ -58,6 +59,7 @@ export const config = {
     },
     async session({ session, token }) {
       if (token) {
+        console.log({ session: "true", token });
         session.user.id = token.id as string;
         session.user.userHandle = token.userHandle as string;
       }
@@ -66,22 +68,7 @@ export const config = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? new URL(process.env.NEXTAUTH_URL || "").hostname
-            : undefined,
-      },
-    },
+    maxAge: 2 * 24 * 60 * 60, // 2 days
   },
 } satisfies NextAuthConfig;
 
