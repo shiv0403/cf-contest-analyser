@@ -4,14 +4,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/db";
 
-const authSecret =
-  process.env.NEXTAUTH_SECRET || "Qr9F5ciQKLYmhPi68rBZSY+93NBHJ0/ZeCuB9Qu2hYY=";
-
 export const config = {
   pages: {
     signIn: "/auth",
   },
-  secret: authSecret,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       id: "credentials",
