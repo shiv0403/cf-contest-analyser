@@ -2,15 +2,12 @@ import { lockoutSerializer } from "@/lib/serializers/lockoutSerializer";
 import { getUserLockouts } from "@/lib/utils/lockout";
 import { NextRequest } from "next/server";
 import { handleError, ValidationError } from "@/lib/utils/errorHandler";
-import { getToken } from "next-auth/jwt";
 import { sendSuccessResponse } from "@/lib/utils/responseHandler";
+import { getJwtToken } from "@/lib/utils/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+    const token = await getJwtToken(request);
 
     const searchParams = request.nextUrl.searchParams;
     const userId = parseInt(searchParams.get("userId") ?? "");

@@ -1,16 +1,15 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
-import { AuthenticationError } from "./errorHandler";
 
-export async function requireAuth(request: NextRequest) {
+export async function getJwtToken(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
+    cookieName:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
   });
-
-  if (!token) {
-    throw new AuthenticationError("Authentication required");
-  }
 
   return token;
 }

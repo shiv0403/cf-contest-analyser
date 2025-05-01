@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { handleError, AuthorizationError } from "@/lib/utils/errorHandler";
+import { getJwtToken } from "./lib/utils/auth";
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token",
-  });
+  const token = await getJwtToken(req);
 
   const isLoggedIn = !!token;
   const isProtectedRoute =

@@ -7,8 +7,8 @@ import {
   InternalServerError,
   ValidationError,
 } from "@/lib/utils/errorHandler";
-import { getToken } from "next-auth/jwt";
 import { sendSuccessResponse } from "@/lib/utils/responseHandler";
+import { getJwtToken } from "@/lib/utils/auth";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
@@ -41,10 +41,7 @@ interface ProblemSolvingPatternsData {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+    const token = await getJwtToken(request);
 
     const data = await request.json();
     const userHandle = data.username;
