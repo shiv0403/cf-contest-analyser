@@ -11,9 +11,8 @@ module.exports = {
     },
     {
       name: "worker",
-      script: "./src/lib/worker.ts",
-      interpreter: "node",
-      interpreter_args: "--import tsx",
+      script: "node_modules/tsx/dist/cli.js",
+      args: "./src/lib/worker.ts",
       env: {
         NODE_ENV: "production",
       },
