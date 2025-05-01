@@ -9,13 +9,6 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  console.log({
-    middleware: true,
-    token,
-    url: req.url,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-
   const isLoggedIn = !!token;
   const isProtectedRoute =
     req.nextUrl.pathname.startsWith("/lockout") ||
@@ -23,8 +16,35 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = req.nextUrl.pathname.startsWith("/auth");
   const isApiRoute = req.nextUrl.pathname.startsWith("/api");
 
+  // get authorization header
+  const authorization = req.headers.get("authorization");
+  const callingService = req.headers.get("x-service-name");
+  const isCallingServiceAuthorized =
+    authorization?.startsWith("Bearer ") &&
+    callingService === process.env.CALLING_SERVICE &&
+    authorization.split(" ")[1] === process.env.SERVICE_TOKEN;
+
   // Handle API routes
-  if (isApiRoute && !isLoggedIn) {
+  if (
+    isApiRoute &&
+    !isLoggedIn &&
+    callingService !== process.env.CALLING_SERVICE
+  ) {
+    const error = new AuthorizationError();
+    const errorResponse = handleError(error);
+    return new NextResponse(errorResponse.body, {
+      status: errorResponse.statusCode,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  if (
+    isApiRoute &&
+    callingService === process.env.CALLING_SERVICE &&
+    !isCallingServiceAuthorized
+  ) {
     const error = new AuthorizationError();
     const errorResponse = handleError(error);
     return new NextResponse(errorResponse.body, {
