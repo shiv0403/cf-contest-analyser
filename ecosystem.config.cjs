@@ -5,8 +5,8 @@ module.exports = {
       script: "node_modules/next/dist/bin/next",
       args: "start",
       env: {
-        NODE_ENV: "production",
-        PORT: process.env.PORT || 3000,
+        NODE_ENV: "development",
+        PORT: 3000,
       },
     },
     {
@@ -14,7 +14,7 @@ module.exports = {
       script: "node_modules/tsx/dist/cli.js",
       args: "./src/lib/worker.ts",
       env: {
-        NODE_ENV: "production",
+        NODE_ENV: "development",
       },
     },
   ],
