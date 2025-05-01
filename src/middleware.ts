@@ -5,11 +5,16 @@ import { handleError, AuthorizationError } from "@/lib/utils/errorHandler";
 
 export async function middleware(req: NextRequest) {
   try {
+    // Get the actual host from headers
+    const host = req.headers.get("host") || "";
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = `${protocol}://${host}`;
+
     const token = await getToken({
       req,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: true,
-      cookieName: "__Secure-next-auth.session-token",
+      cookieName: "__Secure-authjs.session-token",
     });
 
     const isLoggedIn = !!token;
@@ -33,10 +38,14 @@ export async function middleware(req: NextRequest) {
       headers: {
         host: req.headers.get("host"),
         cookie: req.headers.get("cookie"),
+        "x-forwarded-proto": req.headers.get("x-forwarded-proto"),
+        "x-forwarded-host": req.headers.get("x-forwarded-host"),
       },
       nextAuthUrl: process.env.NEXTAUTH_URL,
       nodeEnv: process.env.NODE_ENV,
       requestUrl: req.url,
+      baseUrl,
+      protocol,
     });
 
     // Handle API routes
