@@ -10,8 +10,18 @@ export async function middleware(req: NextRequest) {
     const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
     const baseUrl = `${protocol}://${host}`;
 
+    // Create a new URL object with the correct base URL
+    const url = new URL(req.url, baseUrl);
+
+    // Create a new request with the correct URL
+    const correctedReq = new NextRequest(url.toString(), {
+      headers: req.headers,
+      method: req.method,
+      body: req.body,
+    });
+
     const token = await getToken({
-      req,
+      req: correctedReq,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: true,
       cookieName: "__Secure-authjs.session-token",
@@ -43,7 +53,8 @@ export async function middleware(req: NextRequest) {
       },
       nextAuthUrl: process.env.NEXTAUTH_URL,
       nodeEnv: process.env.NODE_ENV,
-      requestUrl: req.url,
+      originalRequestUrl: req.url,
+      correctedRequestUrl: correctedReq.url,
       baseUrl,
       protocol,
     });
