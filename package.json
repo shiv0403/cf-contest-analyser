@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "worker": "npx tsx --watch src/lib/worker.ts",
-    "build": "next build",
+    "build": "npx prisma generate && npx prisma migrate deploy && next build",
     "start": "pm2 start ecosystem.config.cjs --only nextjs-app",
     "start:worker": "pm2 start ecosystem.config.cjs --only worker",
     "stop": "pm2 stop all",
