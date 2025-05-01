@@ -24,6 +24,17 @@ export async function middleware(req: NextRequest) {
     callingService === process.env.CALLING_SERVICE &&
     authorization.split(" ")[1] === process.env.SERVICE_TOKEN;
 
+  console.log({
+    token,
+    envsecret: process.env.NEXTAUTH_SECRET,
+    env: process.env.NODE_ENV,
+    isLoggedIn,
+    isProtectedRoute,
+    isApiRoute,
+    callingService,
+    isCallingServiceAuthorized,
+  });
+
   // Handle API routes
   if (
     isApiRoute &&

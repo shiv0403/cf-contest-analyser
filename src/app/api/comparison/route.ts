@@ -100,7 +100,7 @@ async function getUsersInfo(userHandle: string, compareToUserHandle: string) {
   );
   const data = await res.json();
   if (data.status !== "OK") {
-    throw new Error(`Error fetching user info data: ${data}`);
+    throw new Error(`Error fetching user info data: ${data.comment}`);
   }
 
   const users = await prisma.user.findMany({
