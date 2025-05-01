@@ -26,6 +26,8 @@ export async function middleware(req: NextRequest) {
 
   console.log({
     token,
+    url: req.url,
+    nextUrl: req.nextUrl,
     envsecret: process.env.NEXTAUTH_SECRET,
     env: process.env.NODE_ENV,
     isLoggedIn,
