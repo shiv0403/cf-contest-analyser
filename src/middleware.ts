@@ -16,7 +16,14 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = req.nextUrl.pathname.startsWith("/auth");
   const isApiRoute = req.nextUrl.pathname.startsWith("/api");
 
-  console.log({ token, isLoggedIn, isProtectedRoute, isAuthRoute, isApiRoute });
+  console.log({
+    token,
+    isLoggedIn,
+    isProtectedRoute,
+    isAuthRoute,
+    isApiRoute,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
 
   // Handle API routes
   if (isApiRoute && !isLoggedIn) {
