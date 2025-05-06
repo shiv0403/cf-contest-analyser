@@ -27,36 +27,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        if (status === "loading") {
-          return;
-        }
+    if (status === "loading") {
+      setIsLoading(true);
+      return;
+    }
 
-        if (session?.user) {
-          setUser({
-            id: parseInt(session.user.id),
-            email: session.user.email,
-            userHandle: session.user.userHandle,
-            name: session.user.name,
-          });
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error checking auth status:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
+    if (session?.user) {
+      setUser({
+        id: parseInt(session.user.id),
+        email: session.user.email,
+        userHandle: session.user.userHandle,
+        name: session.user.name,
+      });
+    } else {
+      setUser(null);
+    }
+    setIsLoading(false);
   }, [session, status]);
 
   const value = {
     user,
-    isLoading: status === "loading" || isLoading,
+    isLoading,
     isAuthenticated: !!user,
   };
 
