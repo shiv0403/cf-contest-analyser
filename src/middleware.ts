@@ -58,7 +58,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
+    return NextResponse.redirect(new URL("/contest-analysis", req.nextUrl));
   }
 
   return NextResponse.next();
@@ -71,6 +71,8 @@ export const config = {
     "/api/ai-analysis/:path*",
     "/lockout/:path*",
     "/ai-analysis/:path*",
+    "/auth",
     "/auth/:path*",
+    "/signup",
   ],
 };
