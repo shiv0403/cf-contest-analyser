@@ -123,15 +123,14 @@ const LockoutPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-3">
-              {lockout.host.avatarUrl && (
-                <Image
-                  src={lockout.host.avatarUrl}
-                  alt="Host Avatar"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              )}
+              <Image
+                src={lockout.host.avatarUrl || "/default-cf-img.svg"}
+                alt="Host Avatar"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {lockout.host.userHandle}
@@ -154,15 +153,14 @@ const LockoutPage = () => {
 
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-3">
-              {lockout.invitee.avatarUrl && (
-                <Image
-                  src={lockout.invitee.avatarUrl}
-                  alt="Opponent Avatar"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              )}
+              <Image
+                src={lockout.invitee.avatarUrl || "/default-cf-img.svg"}
+                alt="Opponent Avatar"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {lockout.invitee.userHandle}

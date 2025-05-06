@@ -641,7 +641,7 @@ const Comparison = () => {
                     <Image
                       width={56}
                       height={56}
-                      src={currentUser.avatar}
+                      src={currentUser.avatar || "/default-cf-img.svg"}
                       alt={currentUser.username}
                       className="w-16 h-16 rounded-full border-2 border-white"
                     />
@@ -694,7 +694,7 @@ const Comparison = () => {
                 >
                   <div className="flex items-center">
                     <Image
-                      src={compareUserData.avatar}
+                      src={compareUserData.avatar || "/default-cf-img.svg"}
                       alt={compareUserData.username}
                       width={56}
                       height={56}
