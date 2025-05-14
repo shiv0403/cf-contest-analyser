@@ -11,20 +11,24 @@ import { NextRequest } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { hostId, opponentHandle } = data;
+    const { hostHandle, opponentHandle } = data;
 
-    if (!hostId || !opponentHandle) {
+    if (!hostHandle || !opponentHandle) {
       throw new InsufficientParametersError();
     }
 
+    const host = await getUserByUserHandle(hostHandle);
     const opponent = await getUserByUserHandle(opponentHandle);
 
     if (!opponent) {
-      throw new NotFoundError("Opponent not found");
+      throw new NotFoundError("Opponent not registered");
+    }
+    if (!host) {
+      throw new NotFoundError("Host not registered");
     }
 
     // Create Lockout request
-    const lockout = await createPendingLockout(parseInt(hostId), opponent.id);
+    const lockout = await createPendingLockout(host.id, opponent.id);
 
     return new Response(JSON.stringify(lockoutSerializer(lockout)), {
       status: 200,

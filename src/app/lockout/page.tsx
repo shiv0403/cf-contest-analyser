@@ -47,7 +47,7 @@ const Lockouts = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          hostId: user.id,
+          hostHandle: user.userHandle,
           opponentHandle: opponentHandle.trim(),
         }),
       });

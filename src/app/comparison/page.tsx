@@ -409,8 +409,8 @@ const Comparison = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          hostId: currentUser.id,
-          inviteeId: compareUserData.id,
+          hostHandle: currentUser.username,
+          opponentHandle: compareUserData.username,
         }),
       });
 

@@ -84,7 +84,6 @@ export async function GET(request: NextRequest) {
 
 function serializeUserInfo(userInfo: CfUserInfo) {
   return {
-    id: userInfo.id,
     username: userInfo.handle,
     avatar: userInfo.avatar,
     country: userInfo.country,
@@ -103,24 +102,9 @@ async function getUsersInfo(userHandle: string, compareToUserHandle: string) {
     throw new Error(`Error fetching user info data: ${data.comment}`);
   }
 
-  const users = await prisma.user.findMany({
-    where: {
-      userHandle: {
-        in: [data.result[0].handle, data.result[1].handle],
-      },
-    },
-  });
-
-  if (!users || users.length < 2) {
-    throw new Error(`Error fetching user info data: ${data.comment}`);
-  }
-
-  const userHandleVsUserInfo: Record<string, CfUserInfo | string> = {};
+  const userHandleVsUserInfo: Record<string, CfUserInfo> = {};
   data.result.forEach((userInfo: CfUserInfo) => {
-    userHandleVsUserInfo[userInfo.handle] = {
-      ...userInfo,
-      id: users.find((user) => user.userHandle === userInfo.handle)?.id,
-    };
+    userHandleVsUserInfo[userInfo.handle] = userInfo;
   });
 
   return userHandleVsUserInfo;
