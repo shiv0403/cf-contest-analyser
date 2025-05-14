@@ -17,22 +17,24 @@ const Navbar = () => {
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={32}
-            height={32}
-            className="w-8 h-8"
-          />
+          <Link href="/">
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
+          </Link>
           <h1 className="text-xl font-bold text-gray-800">
             Codeforces Contest Analyzer
           </h1>
         </div>
         <nav className="hidden md:flex items-center space-x-6">
           <Link
-            href="/contest-analysis"
+            href="/"
             className={`px-3 py-2 text-sm font-medium ${
-              isActive("/contest-analysis")
+              isActive("/")
                 ? "text-red-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}

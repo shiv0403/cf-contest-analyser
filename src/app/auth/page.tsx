@@ -32,7 +32,7 @@ function LoginForm() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/contest-analysis");
+        router.push("/");
       }
     } catch (err) {
       setError(
