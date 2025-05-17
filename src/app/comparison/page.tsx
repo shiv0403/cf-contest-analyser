@@ -789,49 +789,70 @@ const Comparison = () => {
                   </p>
                 </div>
                 <div className="p-6">
-                  <div className="flex space-x-2 mb-4">
-                    <button
-                      onClick={() => setTimeRange("1month")}
-                      className={`px-3 py-1 text-xs font-medium rounded-md ${
-                        timeRange === "1month"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      1M
-                    </button>
-                    <button
-                      onClick={() => setTimeRange("3months")}
-                      className={`px-3 py-1 text-xs font-medium rounded-md ${
-                        timeRange === "3months"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      3M
-                    </button>
-                    <button
-                      onClick={() => setTimeRange("6months")}
-                      className={`px-3 py-1 text-xs font-medium rounded-md ${
-                        timeRange === "6months"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      6M
-                    </button>
-                    <button
-                      onClick={() => setTimeRange("all")}
-                      className={`px-3 py-1 text-xs font-medium rounded-md ${
-                        timeRange === "all"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      All
-                    </button>
-                  </div>
-                  <div className="h-80" id="rating-comparison-chart"></div>
+                  {Object.values(ratingChartData).every(
+                    (data) =>
+                      (!data.user1 || data.user1.length === 0) &&
+                      (!data.user2 || data.user2.length === 0)
+                  ) ? (
+                    <div className="bg-gray-50 rounded-lg p-8 text-center">
+                      <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-100 mb-4">
+                        <i className="fas fa-chart-line text-red-600 text-2xl"></i>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No Rating History Available
+                      </h3>
+                      <p className="text-gray-500 max-w-md mx-auto">
+                        Neither user has participated in any common rated
+                        contests yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex space-x-2 mb-4">
+                        <button
+                          onClick={() => setTimeRange("1month")}
+                          className={`px-3 py-1 text-xs font-medium rounded-md ${
+                            timeRange === "1month"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          1M
+                        </button>
+                        <button
+                          onClick={() => setTimeRange("3months")}
+                          className={`px-3 py-1 text-xs font-medium rounded-md ${
+                            timeRange === "3months"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          3M
+                        </button>
+                        <button
+                          onClick={() => setTimeRange("6months")}
+                          className={`px-3 py-1 text-xs font-medium rounded-md ${
+                            timeRange === "6months"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          6M
+                        </button>
+                        <button
+                          onClick={() => setTimeRange("all")}
+                          className={`px-3 py-1 text-xs font-medium rounded-md ${
+                            timeRange === "all"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          All
+                        </button>
+                      </div>
+                      <div className="h-80" id="rating-comparison-chart"></div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -882,53 +903,76 @@ const Comparison = () => {
                   </p>
                 </div>
                 <div className="p-6">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  {contestPerformanceComparison.length === 0 ? (
+                    <div className="bg-gray-50 rounded-lg p-8 text-center">
+                      <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-100 mb-4">
+                        <i className="fas fa-trophy text-red-600 text-2xl"></i>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No Common Contests Found
+                      </h3>
+                      <p className="text-gray-500 max-w-md mx-auto">
+                        These users haven&apos;t participated in any of the same
+                        contests yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                Contest
+                              </th>
+                              <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                Date
+                              </th>
+                              <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                {currentUser.username}
+                              </th>
+                              <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                {compareUserData.username}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {contestPerformanceComparison
+                              .slice(0, visibleContestsCount)
+                              .map((contest, index) => (
+                                <ContestStrip
+                                  key={index}
+                                  contestData={contest}
+                                />
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {visibleContestsCount <
+                        contestPerformanceComparison.length && (
+                        <div className="mt-6 flex justify-center">
+                          <button
+                            onClick={handleLoadMoreContests}
+                            className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                           >
-                            Contest
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Date
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            {currentUser.username}
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            {compareUserData.username}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {contestPerformanceComparison
-                          .slice(0, visibleContestsCount)
-                          .map((contest, index) => (
-                            <ContestStrip key={index} contestData={contest} />
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-6 flex justify-center">
-                    <button
-                      onClick={handleLoadMoreContests}
-                      className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      View more contests
-                    </button>
-                  </div>
+                            View more contests
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}
