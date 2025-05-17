@@ -17,6 +17,8 @@ type UserData = {
   rank: string;
   rating: number;
   maxRating: number;
+  problemsSolved: number;
+  contestsParticipated: number;
 };
 
 type ContestPerformance = {
@@ -668,7 +670,7 @@ const Comparison = () => {
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-row gap-4 justify-around">
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">
                         Current Rating
@@ -678,6 +680,22 @@ const Comparison = () => {
                       </p>
                       <p className="text-xs text-gray-500">
                         Max: {currentUser.maxRating}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-500">
+                        Problems Solved
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {currentUser.problemsSolved}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-500">
+                        Contests
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {currentUser.contestsParticipated}
                       </p>
                     </div>
                   </div>
@@ -726,7 +744,7 @@ const Comparison = () => {
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-row gap-4 justify-around">
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">
                         Current Rating
@@ -736,6 +754,22 @@ const Comparison = () => {
                       </p>
                       <p className="text-xs text-gray-500">
                         Max: {compareUserData.maxRating}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-500">
+                        Problems Solved
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {compareUserData.problemsSolved}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-500">
+                        Contests
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {compareUserData.contestsParticipated}
                       </p>
                     </div>
                   </div>

@@ -32,6 +32,11 @@ export interface CfUserInfo {
   maxRank: string;
 }
 
+export interface UpdatedCfUserInfo extends CfUserInfo {
+  problemsSolved: number;
+  contestsParticipated: number;
+}
+
 export interface CfProblem {
   contestId: number;
   index: string;

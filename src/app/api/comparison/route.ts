@@ -1,6 +1,7 @@
 import {
   CfUserInfo,
   Contest,
+  UpdatedCfUserInfo,
   UserRatingChange,
   UserSubmission,
 } from "@/app/types/contest.types";
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function serializeUserInfo(userInfo: CfUserInfo) {
+function serializeUserInfo(userInfo: UpdatedCfUserInfo) {
   return {
     username: userInfo.handle,
     avatar: userInfo.avatar,
@@ -90,6 +91,8 @@ function serializeUserInfo(userInfo: CfUserInfo) {
     rank: userInfo.rank,
     rating: userInfo.rating,
     maxRating: userInfo.maxRating,
+    problemsSolved: userInfo.problemsSolved,
+    contestsParticipated: userInfo.contestsParticipated,
   };
 }
 
@@ -102,12 +105,68 @@ async function getUsersInfo(userHandle: string, compareToUserHandle: string) {
     throw new Error(`Error fetching user info data: ${data.comment}`);
   }
 
-  const userHandleVsUserInfo: Record<string, CfUserInfo> = {};
+  const userSubmissionsInfo = await getUsersSubmissionsInfo(userHandle);
+  const compareToUserSubmissionsInfo = await getUsersSubmissionsInfo(
+    compareToUserHandle
+  );
+
+  const userHandleVsUserInfo: Record<string, UpdatedCfUserInfo> = {};
   data.result.forEach((userInfo: CfUserInfo) => {
-    userHandleVsUserInfo[userInfo.handle] = userInfo;
+    let updatedUserInfo: UpdatedCfUserInfo;
+    if (userInfo.handle === userHandle) {
+      updatedUserInfo = {
+        ...userInfo,
+        problemsSolved: userSubmissionsInfo.problemsSolved,
+        contestsParticipated: userSubmissionsInfo.contestsParticipated,
+      };
+    } else {
+      updatedUserInfo = {
+        ...userInfo,
+        problemsSolved: compareToUserSubmissionsInfo.problemsSolved,
+        contestsParticipated: compareToUserSubmissionsInfo.contestsParticipated,
+      };
+    }
+    userHandleVsUserInfo[userInfo.handle] = updatedUserInfo;
   });
 
   return userHandleVsUserInfo;
+}
+
+async function getUsersSubmissionsInfo(userHandle: string) {
+  const userSubmissions = await fetch(
+    `https://codeforces.com/api/user.status?handle=${userHandle}`
+  );
+  const userSubmissionsData = await userSubmissions.json();
+  if (userSubmissionsData.status !== "OK") {
+    throw new Error(
+      `Error fetching user submissions data: ${userSubmissionsData.comment}`
+    );
+  }
+
+  const problemsSolved = new Set(
+    userSubmissionsData.result
+      .filter((submission: UserSubmission) => submission.verdict === "OK")
+      .map(
+        (submission: UserSubmission) =>
+          submission.problem.contestId + "#" + submission.problem.index
+      )
+  ).size;
+
+  const contestsParticipated = new Set(
+    userSubmissionsData.result
+      .filter((submission: UserSubmission) => {
+        return (
+          submission.verdict === "OK" &&
+          submission.author.participantType === "CONTESTANT"
+        );
+      })
+      .map((submission: UserSubmission) => submission.contestId)
+  ).size;
+
+  return {
+    problemsSolved,
+    contestsParticipated,
+  };
 }
 
 async function getRatingChartData(
