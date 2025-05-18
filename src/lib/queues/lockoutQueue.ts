@@ -21,7 +21,7 @@ export const enqueueLockoutWinnerEval = async (lockoutId: number) => {
     queueName,
     { lockoutId },
     {
-      // delay: runAt.getTime() - Date.now(),
+      delay: runAt.getTime() - Date.now(),
       attempts: 3,
       removeOnComplete: true,
       removeOnFail: false,
