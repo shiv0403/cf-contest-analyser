@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signup } from "@/app/actions/auth";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);

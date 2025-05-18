@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function VerifyEmailPage() {
+function VerifyEmailForm() {
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string[]>([]);
@@ -172,7 +172,7 @@ export default function VerifyEmailPage() {
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Didn't receive the code?{" "}
+            Didn&apos;t receive the code?{" "}
             <Link
               href="/auth/signup"
               className="font-medium text-red-600 hover:text-red-800"
@@ -183,5 +183,19 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+        </div>
+      }
+    >
+      <VerifyEmailForm />
+    </Suspense>
   );
 }

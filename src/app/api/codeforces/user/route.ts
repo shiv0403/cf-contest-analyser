@@ -1,3 +1,4 @@
+import { handleError, ValidationError } from "@/lib/utils/errorHandler";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -5,10 +6,12 @@ export async function GET(request: Request) {
   const handle = searchParams.get("handle");
 
   if (!handle) {
-    return NextResponse.json(
-      { error: "Codeforces handle is required" },
-      { status: 400 }
+    const errorResponse = handleError(
+      new ValidationError("Codeforces handle is required")
     );
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
+    });
   }
 
   try {
@@ -18,26 +21,30 @@ export async function GET(request: Request) {
     const data = await response.json();
 
     if (data.status !== "OK") {
-      return NextResponse.json(
-        { error: "Failed to fetch user info" },
-        { status: 400 }
+      const errorResponse = handleError(
+        new ValidationError("Failed to fetch user info")
       );
+      return new Response(errorResponse.body, {
+        status: errorResponse.statusCode,
+      });
     }
 
     const user = data.result[0];
 
     if (!user.email) {
-      return NextResponse.json(
-        { error: "Please make your email visible on Codeforces" },
-        { status: 400 }
+      const errorResponse = handleError(
+        new ValidationError("Please make your email visible on Codeforces")
       );
+      return new Response(errorResponse.body, {
+        status: errorResponse.statusCode,
+      });
     }
 
     return NextResponse.json({ email: user.email });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch user info" },
-      { status: 500 }
-    );
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
+    });
   }
 }
