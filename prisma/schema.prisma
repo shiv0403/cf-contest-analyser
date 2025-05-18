@@ -109,6 +109,7 @@ model User {
   lastName           String
   avatarUrl          String?
   createdAt          DateTime @default(now())
+  emailVerified      Boolean @default(false)
   updatedAt          DateTime @updatedAt @default(now())
   hostedLockouts     Lockout[] @relation("HostLockouts")
   invitedLockouts    Lockout[] @relation("InviteeLockouts")
@@ -146,4 +147,14 @@ model LockoutSubmission {
   submission          Submission @relation(fields: [submissionId], references: [id])
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt @default(now())
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }

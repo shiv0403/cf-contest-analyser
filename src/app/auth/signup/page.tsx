@@ -18,13 +18,56 @@ export default function SignupPage() {
 
     try {
       const formData = new FormData(e.currentTarget);
-      const result = await signup(formData);
+      const userHandle = formData.get("codeforces-username") as string;
+      const email = formData.get("email") as string;
 
-      if (result.success) {
-        router.push("/auth?success=Account created successfully");
-      } else {
-        setError(result.errors || ["An error occurred during signup"]);
+      // First, verify the Codeforces handle and get the email
+      const cfResponse = await fetch(
+        `/api/codeforces/user?handle=${userHandle}`
+      );
+      const cfData = await cfResponse.json();
+
+      if (!cfResponse.ok) {
+        setError([cfData.error]);
+        return;
       }
+
+      // If the email doesn't match, show error
+      if (cfData.email !== email) {
+        setError(["Email doesn't match your Codeforces email"]);
+        return;
+      }
+
+      // Send verification code
+      const verifyResponse = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        setError([verifyData.error]);
+        return;
+      }
+
+      // Store form data in session storage for later use
+      sessionStorage.setItem(
+        "signupData",
+        JSON.stringify({
+          firstName: formData.get("first-name"),
+          lastName: formData.get("last-name"),
+          email,
+          password: formData.get("password"),
+          userHandle,
+        })
+      );
+
+      // Redirect to verification page
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError([`An error occurred during signup: ${err}`]);
     } finally {
@@ -248,7 +291,7 @@ export default function SignupPage() {
               href="/auth"
               className="font-medium text-red-600 hover:text-red-800"
             >
-              Login
+              Sign in
             </Link>
           </p>
         </div>

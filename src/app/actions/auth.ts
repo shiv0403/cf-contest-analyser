@@ -1,5 +1,8 @@
 "use server";
 
+// This file is kept for future server actions if needed
+// The signup functionality has been moved to the API route at /api/auth/create-user
+
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/db";
 
@@ -55,6 +58,7 @@ export async function signup(formData: FormData) {
         email,
         password: hashedPassword,
         userHandle,
+        emailVerified: true,
       },
     });
 
