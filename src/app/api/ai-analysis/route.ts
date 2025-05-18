@@ -9,6 +9,8 @@ import {
 } from "@/lib/utils/errorHandler";
 import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 import { getJwtToken } from "@/lib/utils/auth";
+import { findPracticeProblems } from "@/lib/utils/problem";
+import { topicToTagMap } from "@/lib/utils/topicTagMap";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
@@ -134,10 +136,6 @@ ${JSON.stringify(
   2
 )}
 
-Please make sure that all links are valid and working. They must be correct at any point of time.
-Practice problems must be from codeforces.com and the name of the problem must be the same as the name in codeforces. The links must be correct at any point of time. Please make sure that the links are not broken.
-Resource links must be valid at any point of time. especially for cp-algorithms.
-Also recommend 8 problems for each weak topic.
 Please provide a detailed analysis in JSON format with the following structure:
 {
   "strengthAnalysis": {
@@ -155,15 +153,7 @@ Please provide a detailed analysis in JSON format with the following structure:
       {
         "topic": string,
         "proficiency": number (0-100),
-        "suggestedApproach": string,
-        "recommendedProblems": [
-          {
-            "name": string,
-            "difficulty": string,
-            "link": string,
-            "conceptsCovered": [string]
-          }
-        ]
+        "suggestedApproach": string
       }
     ],
     "improvementAreas": [string] (list of areas needing immediate attention)
@@ -217,13 +207,11 @@ Please provide a detailed analysis in JSON format with the following structure:
 
 Analysis Guidelines:
 1. Focus on actionable insights based on the user's current performance
-2. Provide specific problem recommendations within 200-300 rating points of their current level
-3. Consider their success rate and time distribution patterns
-4. Analyze their topic-wise performance to identify knowledge gaps
-5. Suggest realistic time management strategies based on their current activity patterns
-6. Set achievable milestones based on their current rating and progress rate
+2. Consider their success rate and time distribution patterns
+3. Analyze their topic-wise performance to identify knowledge gaps
+4. Suggest realistic time management strategies based on their current activity patterns
+5. Set achievable milestones based on their current rating and progress rate
 
-Please make sure that all links are valid and working. They must be correct at any point of time.
 Format your response as a valid JSON object without any additional text or explanations.`;
 
   try {
@@ -240,7 +228,26 @@ Format your response as a valid JSON object without any additional text or expla
       .replace(/\s*\+\s*/g, "")
       .replace(/^'|';?$/g, "");
 
-    return JSON.parse(cleanText);
+    const analysis = JSON.parse(cleanText);
+    console.log(analysis.weaknessAnalysis.weakTopics);
+    // Add practice problems for each weak topic
+    for (const weakTopic of analysis.weaknessAnalysis.weakTopics) {
+      const tags = topicToTagMap[weakTopic.topic.toLowerCase()] || [
+        weakTopic.topic,
+      ];
+      console.log(
+        `Finding problems for topic: ${weakTopic.topic}, using tags:`,
+        tags
+      );
+      const practiceProblems = await findPracticeProblems(
+        weakTopic.topic,
+        userProfile.rating || 800
+      );
+      console.log({ practiceProblems });
+      weakTopic.recommendedProblems = practiceProblems;
+    }
+
+    return analysis;
   } catch (error) {
     throw new InternalServerError(`Failed to generate AI analysis: ${error}`);
   }
