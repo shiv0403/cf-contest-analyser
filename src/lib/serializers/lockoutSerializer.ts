@@ -22,6 +22,7 @@ export const lockoutSerializer = (
     endTime: lockout.endTime,
     status: lockout.status,
     inviteCode: lockout.inviteCode,
+    createdAt: lockout.createdAt,
   };
 
   if ("LockoutSubmissions" in lockout) {

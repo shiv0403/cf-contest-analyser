@@ -42,6 +42,9 @@ export const getUserLockouts = async (userId: number) => {
         invitee: true,
         winner: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return lockouts;
