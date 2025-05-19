@@ -3,6 +3,14 @@ import { prisma } from "@/lib/db";
 import moment from "moment";
 import { UserSubmission } from "@/app/types/contest.types";
 
+export async function getUserAvatar(handle: string) {
+  const res = await fetch(
+    `https://codeforces.com/api/user.info?handles=${handle}`
+  );
+  const data = await res.json();
+  return data.result[0].titlePhoto;
+}
+
 export async function getUserRating(handle: string) {
   const res = await fetch(
     `https://codeforces.com/api/user.info?handles=${handle}`

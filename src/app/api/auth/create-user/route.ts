@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
+import { ValidationError } from "@/lib/utils/errorHandler";
+import { handleError } from "@/lib/utils/errorHandler";
+import { getUserAvatar } from "@/lib/utils/codeforces";
 
 export async function POST(request: Request) {
   try {
@@ -8,10 +11,7 @@ export async function POST(request: Request) {
       await request.json();
 
     if (!firstName || !lastName || !email || !password || !userHandle) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
-      );
+      throw new ValidationError("All fields are required");
     }
 
     // Check if user already exists
@@ -22,14 +22,12 @@ export async function POST(request: Request) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "Email or Codeforces handle already exists" },
-        { status: 400 }
-      );
+      throw new ValidationError("Email or Codeforces handle already exists");
     }
 
     // Hash the password
     const hashedPassword = await hash(password, 12);
+    const userAvatar = await getUserAvatar(userHandle);
 
     // Create the user
     const user = await prisma.user.create({
@@ -40,10 +38,11 @@ export async function POST(request: Request) {
         password: hashedPassword,
         userHandle,
         emailVerified: true,
+        avatarUrl: userAvatar,
       },
     });
 
-    return NextResponse.json({
+    return sendSuccessResponse({
       success: true,
       user: {
         firstName: user.firstName,
@@ -53,10 +52,11 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error creating user:", error);
-    return NextResponse.json(
-      { error: "Failed to create user account" },
-      { status: 500 }
+    const errorResponse = handleError(
+      new ValidationError(`Failed to create user account: ${error}`)
     );
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
+    });
   }
 }

@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { randomInt } from "crypto";
 import nodemailer from "nodemailer";
-
+import { handleError, ValidationError } from "@/lib/utils/errorHandler";
+import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 // Create a transporter for sending emails
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+      throw new ValidationError("Email is required");
     }
 
     // Generate verification code
@@ -62,13 +62,14 @@ export async function POST(request: Request) {
       `,
     });
 
-    return NextResponse.json({ success: true });
+    return sendSuccessResponse({ success: true }, "Verification email sent");
   } catch (error) {
-    console.error("Error sending verification email:", error);
-    return NextResponse.json(
-      { error: "Failed to send verification email" },
-      { status: 500 }
+    const errorResponse = handleError(
+      new ValidationError(`Failed to send verification email: ${error}`)
     );
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
+    });
   }
 }
 
@@ -77,10 +78,7 @@ export async function PUT(request: Request) {
     const { email, code } = await request.json();
 
     if (!email || !code) {
-      return NextResponse.json(
-        { error: "Email and verification code are required" },
-        { status: 400 }
-      );
+      throw new ValidationError("Email and verification code are required");
     }
 
     // Find the verification code
@@ -95,10 +93,7 @@ export async function PUT(request: Request) {
     });
 
     if (!verificationCode) {
-      return NextResponse.json(
-        { error: "Invalid or expired verification code" },
-        { status: 400 }
-      );
+      throw new ValidationError("Invalid or expired verification code");
     }
 
     // Delete the used verification code
@@ -108,12 +103,13 @@ export async function PUT(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true });
+    return sendSuccessResponse({ success: true }, "Code verified successfully");
   } catch (error) {
-    console.error("Error verifying code:", error);
-    return NextResponse.json(
-      { error: "Failed to verify code" },
-      { status: 500 }
+    const errorResponse = handleError(
+      new ValidationError(`Failed to verify code: ${error}`)
     );
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
+    });
   }
 }

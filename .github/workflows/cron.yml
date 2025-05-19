@@ -1,8 +1,8 @@
-name: Cron Job
+name: Cron Jobs
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every 30 minutes
+    - cron: '0 0 * * *'  # Runs every day at 12:00 AM
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
@@ -14,9 +14,17 @@ jobs:
           echo "APP_URL: ${{ secrets.APP_URL }}"
           echo "CRON_SECRET: ${{ secrets.CRON_SECRET }}"
       
-      - name: Run Cron Job
+      - name: Run Main Cron Job
         run: |
           curl -X POST "${{ secrets.APP_URL }}/api/cron" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Update User Avatars
+        run: |
+          curl -X POST "${{ secrets.APP_URL }}/api/cron/update-avatars" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
         env:
           APP_URL: ${{ secrets.APP_URL }}
