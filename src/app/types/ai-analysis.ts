@@ -14,6 +14,7 @@ export interface WeakTopic {
   topic: string;
   proficiency: number;
   suggestedApproach: string;
+  recommendedProblemRatings: number[];
   recommendedProblems: {
     name: string;
     difficulty: string;

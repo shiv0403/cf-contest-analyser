@@ -9,8 +9,6 @@ import {
 } from "@/lib/utils/errorHandler";
 import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 import { getJwtToken } from "@/lib/utils/auth";
-import { findPracticeProblems } from "@/lib/utils/problem";
-import { topicToTagMap } from "@/lib/utils/topicTagMap";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
@@ -47,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
     const userHandle = data.username;
+    const reanalyze = data.reanalyze;
 
     if (!userHandle) {
       throw new ValidationError("User handle is required");
@@ -81,7 +80,9 @@ export async function POST(request: NextRequest) {
         },
       });
     } else if (
-      currentAIAnalysis.updatedAt < new Date(Date.now() - 24 * 60 * 60 * 1000)
+      currentAIAnalysis.updatedAt <
+        new Date(Date.now() - 24 * 60 * 60 * 1000) &&
+      reanalyze
     ) {
       const { userProfile, performanceMetrics, problemSolvingPatterns } =
         await getUserDataForAiAnalysis(userHandle);
@@ -99,6 +100,8 @@ export async function POST(request: NextRequest) {
           analysis: analysis,
         },
       });
+    } else if (reanalyze) {
+      throw new ValidationError("You can only re-analyze once per day");
     }
 
     const latestAIAnalysis = await prisma.aiAnalysis.findFirst({
@@ -118,6 +121,39 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
       },
+    });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const token = await getJwtToken(request);
+    const userHandle = request.nextUrl.searchParams.get("userHandle");
+
+    if (!userHandle) {
+      throw new ValidationError("User handle is required");
+    }
+
+    if (token?.userHandle !== userHandle) {
+      throw new ValidationError(
+        "You can only request analysis for your own handle"
+      );
+    }
+
+    const aiAnalysis = await prisma.aiAnalysis.findFirst({
+      where: {
+        userHandle: userHandle,
+      },
+    });
+
+    return sendSuccessResponse(
+      aiAnalysis?.analysis,
+      "AI analysis fetched successfully"
+    );
+  } catch (error) {
+    const errorResponse = handleError(error);
+    return new Response(errorResponse.body, {
+      status: errorResponse.statusCode,
     });
   }
 }
@@ -153,7 +189,8 @@ Please provide a detailed analysis in JSON format with the following structure:
       {
         "topic": string,
         "proficiency": number (0-100),
-        "suggestedApproach": string
+        "suggestedApproach": string,
+        "recommendedProblemRatings": [number] (list of problem ratings for the user to practice acc. to user's proficiency and current rating)
       }
     ],
     "improvementAreas": [string] (list of areas needing immediate attention)
@@ -229,23 +266,6 @@ Format your response as a valid JSON object without any additional text or expla
       .replace(/^'|';?$/g, "");
 
     const analysis = JSON.parse(cleanText);
-    console.log(analysis.weaknessAnalysis.weakTopics);
-    // Add practice problems for each weak topic
-    for (const weakTopic of analysis.weaknessAnalysis.weakTopics) {
-      const tags = topicToTagMap[weakTopic.topic.toLowerCase()] || [
-        weakTopic.topic,
-      ];
-      console.log(
-        `Finding problems for topic: ${weakTopic.topic}, using tags:`,
-        tags
-      );
-      const practiceProblems = await findPracticeProblems(
-        weakTopic.topic,
-        userProfile.rating || 800
-      );
-      console.log({ practiceProblems });
-      weakTopic.recommendedProblems = practiceProblems;
-    }
 
     return analysis;
   } catch (error) {

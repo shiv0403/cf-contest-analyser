@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   AiAnalysisResponse,
   ShortTermGoal,
   LongTermGoal,
 } from "@/app/types/ai-analysis";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { FiPlus } from "react-icons/fi";
+
+interface PracticeProblem {
+  name: string;
+  difficulty: number;
+  link: string;
+  conceptsCovered: string[];
+}
+
+interface TopicPagination {
+  page: number;
+  hasMore: boolean;
+}
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -21,6 +35,95 @@ const staggerContainer = {
 };
 
 const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
+  const { user } = useAuth();
+  const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [practiceProblems, setPracticeProblems] = useState<
+    Record<string, PracticeProblem[]>
+  >({});
+  const [loadingProblems, setLoadingProblems] = useState<
+    Record<string, boolean>
+  >({});
+  const [pagination, setPagination] = useState<Record<string, TopicPagination>>(
+    {}
+  );
+  const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({});
+  const observerRefs = useRef<Record<string, IntersectionObserver>>({});
+
+  const toggleTopic = async (topic: string) => {
+    setExpandedTopics((prev) => {
+      const newState = { ...prev, [topic]: !prev[topic] };
+
+      // If topic is being expanded and we don't have problems loaded yet
+      if (newState[topic] && !practiceProblems[topic]) {
+        fetchPracticeProblems(topic, 1);
+      }
+
+      return newState;
+    });
+  };
+
+  const toggleTags = (problemId: string) => {
+    setExpandedTags((prev) => ({
+      ...prev,
+      [problemId]: !prev[problemId],
+    }));
+  };
+
+  const fetchPracticeProblems = async (topic: string, page: number) => {
+    if (!user?.userHandle) return;
+
+    setLoadingProblems((prev) => ({ ...prev, [topic]: true }));
+    try {
+      const response = await fetch(
+        `/api/ai-analysis/practice-problems?topicName=${encodeURIComponent(
+          topic
+        )}&userHandle=${user.userHandle}&page=${page}&limit=10`
+      );
+      if (!response.ok) throw new Error("Failed to fetch practice problems");
+      const { data } = await response.json();
+
+      setPracticeProblems((prev) => ({
+        ...prev,
+        [topic]: page === 1 ? data : [...(prev[topic] || []), ...data],
+      }));
+
+      setPagination((prev) => ({
+        ...prev,
+        [topic]: {
+          page,
+          hasMore: data.length === 10,
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching practice problems:", error);
+    } finally {
+      setLoadingProblems((prev) => ({ ...prev, [topic]: false }));
+    }
+  };
+
+  const lastProblemRef = useCallback(
+    (node: HTMLTableRowElement | null, topic: string) => {
+      if (loadingProblems[topic]) return;
+
+      if (observerRefs.current[topic]) {
+        observerRefs.current[topic].disconnect();
+      }
+
+      observerRefs.current[topic] = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && pagination[topic]?.hasMore) {
+          fetchPracticeProblems(topic, pagination[topic].page + 1);
+        }
+      });
+
+      if (node) {
+        observerRefs.current[topic].observe(node);
+      }
+    },
+    [loadingProblems, pagination]
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -61,7 +164,7 @@ const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
                       >
                         <div className="flex justify-between items-center mb-3">
                           <span className="font-semibold text-gray-800 text-base">
-                            {topic.topic}
+                            {topic.topic.toLocaleUpperCase()}
                           </span>
                           <span className="text-xs font-medium text-gray-700 bg-gray-50 px-3 py-1 rounded-full">
                             {topic.proficiency}% Proficiency
@@ -130,58 +233,154 @@ const AiAnalysis = ({ analysis }: { analysis: AiAnalysisResponse }) => {
                       whileHover={{ scale: 1.01 }}
                       className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 hover:shadow-md transition-all duration-300"
                     >
-                      <div className="flex justify-between items-center mb-3">
+                      <div
+                        className="flex justify-between items-center mb-3 cursor-pointer"
+                        onClick={() => toggleTopic(topic.topic)}
+                      >
                         <span className="font-semibold text-gray-800 text-base">
-                          {topic.topic}
+                          {topic.topic.toLocaleUpperCase()}
                         </span>
-                        <span className="text-xs font-medium text-gray-700 bg-gray-50 px-3 py-1 rounded-full">
-                          {topic.proficiency}% Proficiency
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-700 bg-gray-50 px-3 py-1 rounded-full">
+                            {topic.proficiency}% Proficiency
+                          </span>
+                          <span className="text-gray-500">
+                            {expandedTopics[topic.topic] ? "▼" : "▶"}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                        {topic.suggestedApproach}
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {topic.recommendedProblems.map((problem, pIndex) => (
-                          <motion.a
-                            key={pIndex}
-                            href={problem.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.02 }}
-                            className="block bg-white rounded-lg p-3 border border-gray-200 hover:border-gray-200 hover:shadow-md transition-all duration-300"
-                          >
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="font-medium text-gray-800 text-sm">
-                                {problem.name}
-                              </span>
-                              <span
-                                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                  problem.difficulty === "Easy"
-                                    ? "bg-green-100 text-green-800"
-                                    : problem.difficulty === "Medium"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {problem.difficulty}
-                              </span>
+
+                      {expandedTopics[topic.topic] && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                            {topic.suggestedApproach}
+                          </p>
+
+                          <div className="relative">
+                            <div className="overflow-x-auto">
+                              <div className="h-[400px] overflow-y-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                  <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                      <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50"
+                                      >
+                                        Problem Name
+                                      </th>
+                                      <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50"
+                                      >
+                                        Rating
+                                      </th>
+                                      <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50"
+                                      >
+                                        Tags
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="bg-white divide-y divide-gray-200">
+                                    {practiceProblems[topic.topic]?.map(
+                                      (problem, pIndex) => (
+                                        <tr
+                                          key={pIndex}
+                                          ref={
+                                            pIndex ===
+                                            practiceProblems[topic.topic]
+                                              .length -
+                                              1
+                                              ? (node) =>
+                                                  lastProblemRef(
+                                                    node,
+                                                    topic.topic
+                                                  )
+                                              : null
+                                          }
+                                          className="hover:bg-gray-50 transition-colors"
+                                        >
+                                          <td className="px-6 py-4 whitespace-nowrap">
+                                            <a
+                                              href={problem.link}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                                            >
+                                              {problem.name}
+                                            </a>
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                              className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                                problem.difficulty <= 1200
+                                                  ? "bg-green-100 text-green-800"
+                                                  : problem.difficulty <= 1600
+                                                  ? "bg-yellow-100 text-yellow-800"
+                                                  : "bg-red-100 text-red-800"
+                                              }`}
+                                            >
+                                              {problem.difficulty}
+                                            </span>
+                                          </td>
+                                          <td className="px-6 py-4">
+                                            <div className="flex flex-wrap gap-1.5 items-center">
+                                              {problem.conceptsCovered
+                                                .slice(
+                                                  0,
+                                                  expandedTags[
+                                                    `${topic.topic}-${pIndex}`
+                                                  ]
+                                                    ? undefined
+                                                    : 3
+                                                )
+                                                .map((concept, cIndex) => (
+                                                  <span
+                                                    key={cIndex}
+                                                    className="text-xs bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full"
+                                                  >
+                                                    {concept}
+                                                  </span>
+                                                ))}
+                                              {problem.conceptsCovered.length >
+                                                3 && (
+                                                <button
+                                                  onClick={() =>
+                                                    toggleTags(
+                                                      `${topic.topic}-${pIndex}`
+                                                    )
+                                                  }
+                                                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                                                >
+                                                  <FiPlus className="w-4 h-4" />
+                                                </button>
+                                              )}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      )
+                                    )}
+                                  </tbody>
+                                </table>
+                                {loadingProblems[topic.topic] && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 py-2 flex justify-center items-center border-t border-gray-200">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                                    <span className="ml-2 text-sm text-gray-600">
+                                      Loading more problems...
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {problem.conceptsCovered.map(
-                                (concept, cIndex) => (
-                                  <span
-                                    key={cIndex}
-                                    className="text-xs bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full"
-                                  >
-                                    {concept}
-                                  </span>
-                                )
-                              )}
-                            </div>
-                          </motion.a>
-                        ))}
-                      </div>
+                          </div>
+                        </motion.div>
+                      )}
                     </motion.div>
                   ))}
                 </div>

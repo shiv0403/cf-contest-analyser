@@ -21,13 +21,13 @@ export const getProblemFromContestIdAndIndex = async (
 
 export const findPracticeProblems = async (
   topic: string,
-  userRating: number,
-  limit: number = 8
+  userRating: number[],
+  limit: number = 10,
+  page: number = 1
 ) => {
-  // Map general topic to Codeforces tags
   const tags = topicToTagMap[topic.toLowerCase()] || [topic];
-  const minRating = Math.max(800, userRating - 200);
-  const maxRating = userRating + 300;
+  const minRating = Math.min(...userRating);
+  const maxRating = Math.max(...userRating);
 
   const problems = await prisma.problem.findMany({
     where: {
@@ -43,6 +43,7 @@ export const findPracticeProblems = async (
       rating: "asc",
     },
     take: limit,
+    skip: (page - 1) * limit,
   });
 
   return problems.map((problem) => ({
