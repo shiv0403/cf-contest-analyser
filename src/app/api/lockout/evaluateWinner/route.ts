@@ -73,10 +73,27 @@ export async function POST(request: NextRequest) {
             status: "completed",
           },
         });
+        status = true;
       } else {
+        await prisma.lockout.update({
+          where: {
+            id: lockoutId,
+          },
+          data: {
+            status: "completed",
+          },
+        });
         status = false;
       }
     } else {
+      await prisma.lockout.update({
+        where: {
+          id: lockoutId,
+        },
+        data: {
+          status: "completed",
+        },
+      });
       status = false;
     }
 
