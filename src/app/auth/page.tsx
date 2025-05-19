@@ -51,7 +51,7 @@ function LoginForm() {
           <div className="mb-8 flex items-center justify-center">
             <div className="flex items-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white">
-                <span className="font-bold">CF</span>
+                <span className="font-bold">CCA</span>
               </div>
               <h1 className="ml-2 text-xl font-bold">
                 Codeforces Contest Analyzer

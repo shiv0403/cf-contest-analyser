@@ -45,9 +45,20 @@ export async function POST(request: Request) {
       to: email,
       subject: "Verify your email for Codeforces Contest Analyzer",
       html: `
-        <h1>Email Verification</h1>
-        <p>Your verification code is: <strong>${verificationCode}</strong></p>
-        <p>This code will expire in 10 minutes.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 10px;">Email Verification</h1>
+            <div style="width: 50px; height: 3px; background-color: #ef4444; margin: 0 auto;"></div>
+          </div>
+          
+          <div style="background-color: white; padding: 25px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <p style="color: #4b5563; font-size: 16px; margin-bottom: 15px;">Your verification code is:</p>
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 4px; text-align: center; margin-bottom: 20px;">
+              <strong style="color: #1a1a1a; font-size: 24px; letter-spacing: 2px;">${verificationCode}</strong>
+            </div>
+            <p style="color: #6b7280; font-size: 14px; text-align: center;">This code will expire in 10 minutes.</p>
+          </div>
+        </div>
       `,
     });
 
