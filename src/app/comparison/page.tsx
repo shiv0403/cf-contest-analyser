@@ -219,7 +219,9 @@ const Comparison = () => {
             type: "radar",
             data: [
               {
-                value: topicProficiencyChartData[currentUser.username],
+                value: Object.values(
+                  topicProficiencyChartData[currentUser.username]
+                ),
                 name: currentUser.username,
                 symbol: "circle",
                 symbolSize: 8,
@@ -235,7 +237,9 @@ const Comparison = () => {
                 },
               },
               {
-                value: topicProficiencyChartData[compareUserData.username],
+                value: Object.values(
+                  topicProficiencyChartData[compareUserData.username]
+                ),
                 name: compareUserData.username,
                 symbol: "circle",
                 symbolSize: 8,
