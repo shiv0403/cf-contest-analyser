@@ -10,7 +10,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                 CF
               </div>
-              <span className="font-bold">Codeforces Contest Analyzer</span>
+              <span className="font-bold">Cf Analyser</span>
             </div>
             <p className="text-sm text-gray-400 mt-2">
               Improve your competitive programming skills
@@ -38,7 +38,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-700 mt-6 pt-6 text-sm text-gray-400 text-center">
-          © 2025 Codeforces Contest Analyzer. All rights reserved.
+          © 2025 Cf Analyser. All rights reserved.
         </div>
       </div>
     </footer>

@@ -26,9 +26,7 @@ const Navbar = () => {
               className="w-8 h-8"
             />
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">
-            Codeforces Contest Analyzer
-          </h1>
+          <h1 className="text-xl font-bold text-gray-800">Cf Analyser</h1>
         </div>
         <nav className="hidden md:flex items-center space-x-6">
           <Link

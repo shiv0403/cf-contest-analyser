@@ -54,7 +54,9 @@ export async function middleware(req: NextRequest) {
 
   // Handle page routes
   if (isProtectedRoute && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/auth", req.nextUrl));
+    const url = new URL("/auth", req.nextUrl);
+    url.searchParams.set("callbackUrl", req.nextUrl.pathname);
+    return NextResponse.redirect(url);
   }
 
   if (isAuthRoute && isLoggedIn) {

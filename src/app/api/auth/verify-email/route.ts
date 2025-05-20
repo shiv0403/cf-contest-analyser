@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: email,
-      subject: "Verify your email for Codeforces Contest Analyzer",
+      subject: "Verify your email for Cf Analyser",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
           <div style="text-align: center; margin-bottom: 30px;">

@@ -87,9 +87,7 @@ function VerifyEmailForm() {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white">
                 <span className="font-bold">CF</span>
               </div>
-              <h1 className="ml-2 text-xl font-bold">
-                Codeforces Contest Analyzer
-              </h1>
+              <h1 className="ml-2 text-xl font-bold">Cf Analyser</h1>
             </div>
           </div>
 

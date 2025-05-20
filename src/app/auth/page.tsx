@@ -12,6 +12,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const success = searchParams.get("success");
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,12 +28,13 @@ function LoginForm() {
         email,
         password,
         redirect: false,
+        redirectTo: callbackUrl,
       });
 
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/");
+        router.push(callbackUrl);
       }
     } catch (err) {
       setError(
@@ -47,22 +49,17 @@ function LoginForm() {
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-md">
-          {/* Logo and Header */}
           <div className="mb-8 flex items-center justify-center">
             <div className="flex items-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white">
-                <span className="font-bold">CCA</span>
+                <span className="font-bold">CFA</span>
               </div>
-              <h1 className="ml-2 text-xl font-bold">
-                Codeforces Contest Analyzer
-              </h1>
+              <h1 className="ml-2 text-xl font-bold">Cf Analyser</h1>
             </div>
           </div>
 
-          {/* Auth Card */}
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="w-full">
-              {/* Tabs */}
               <div className="grid w-full grid-cols-2 bg-gray-50">
                 <Link
                   href="/auth"
@@ -78,7 +75,6 @@ function LoginForm() {
                 </Link>
               </div>
 
-              {/* Login Tab */}
               <div className="p-6">
                 <div className="mb-4 text-center">
                   <h2 className="text-lg font-semibold">Welcome back</h2>

@@ -82,11 +82,9 @@ export default function SignupPage() {
           <div className="mb-8 flex items-center justify-center">
             <div className="flex items-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white">
-                <span className="font-bold">CF</span>
+                <span className="font-bold">CFA</span>
               </div>
-              <h1 className="ml-2 text-xl font-bold">
-                Codeforces Contest Analyzer
-              </h1>
+              <h1 className="ml-2 text-xl font-bold">Cf Analyser</h1>
             </div>
           </div>
 
@@ -114,7 +112,7 @@ export default function SignupPage() {
                 <div className="mb-4 text-center">
                   <h2 className="text-lg font-semibold">Create an account</h2>
                   <p className="text-sm text-gray-500">
-                    Join Codeforces Contest Analyzer today
+                    Join Cf Analyser today
                   </p>
                 </div>
 
