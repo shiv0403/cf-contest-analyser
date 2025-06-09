@@ -10,9 +10,25 @@ import { ToastProvider } from "./contexts/ToastContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CF Contest Analyser",
+  title: {
+    default: "Codeforces Analyser",
+    template: "%s | Codeforces Analyser",
+  },
   description:
-    "This is a platform where user will be able to analyse their codeforces contest performance by selecting the contest which they have given",
+    "Analyze your Codeforces contest performance with detailed insights and statistics. Track your progress, identify patterns, and improve your competitive programming skills.",
+  twitter: {
+    card: "summary_large_image",
+    title: "Codeforces Analyser",
+    description:
+      "Analyze your Codeforces contest performance with detailed insights and statistics. Track your progress, identify patterns, and improve your competitive programming skills.",
+    images: ["/opengraph.png"],
+  },
+  openGraph: {
+    title: "Codeforces Analyser",
+    description:
+      "Analyze your Codeforces contest performance with detailed insights and statistics. Track your progress, identify patterns, and improve your competitive programming skills.",
+    images: ["/opengraph.png"],
+  },
 };
 
 export default async function RootLayout({
