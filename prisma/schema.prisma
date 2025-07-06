@@ -100,6 +100,24 @@ model AiAnalysis {
   updatedAt           DateTime @updatedAt @default(now())
 }
 
+model Notification {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // Type of notification (e.g., "CONTEST", "LOCKOUT", "SYSTEM")
+  entityType  String   // Type of the related entity (e.g., "Contest", "Lockout")
+  entityId    Int      // ID of the related entity
+  title       String
+  message     String
+  deeplinkUrl String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+}
+
 model User {
   id                 Int @id @default(autoincrement())
   userHandle         String @unique
@@ -114,6 +132,7 @@ model User {
   hostedLockouts     Lockout[] @relation("HostLockouts")
   invitedLockouts    Lockout[] @relation("InviteeLockouts")
   winnerLockouts     Lockout[] @relation("WinnerLockouts")
+  notifications      Notification[]
 }
 
 model Lockout {
