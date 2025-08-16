@@ -1,7 +1,7 @@
 import { getJwtToken } from "@/lib/utils/auth";
 import { handleError, ValidationError } from "@/lib/utils/errorHandler";
 import { findPracticeProblems } from "@/lib/utils/problem";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { sendSuccessResponse } from "@/lib/utils/responseHandler";
 import { AiAnalysisResponse } from "@/app/types/ai-analysis";

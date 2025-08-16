@@ -41,8 +41,8 @@ export default function NotificationBell() {
         `/api/notifications?page=${pageNum}&limit=10`
       );
       if (!response.ok) throw new Error("Failed to fetch notifications");
-      const responseData: NotificationsResponse = await response.json();
-      const data = responseData.data;
+      const responseData = await response.json();
+      const data: NotificationsResponse = responseData.data;
 
       if (pageNum === 1) {
         setNotifications(data.notifications);
