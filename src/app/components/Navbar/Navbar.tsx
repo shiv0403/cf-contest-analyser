@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import NotificationBell from "@/components/NotificationBell";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -75,6 +76,7 @@ const Navbar = () => {
             <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>
           ) : session?.user ? (
             <div className="flex items-center space-x-4">
+              <NotificationBell />
               <div className="text-sm">
                 <span className="font-medium text-gray-900">
                   {session.user.name}
